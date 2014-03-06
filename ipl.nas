@@ -1,8 +1,12 @@
 ;start os
 ;TAB = 4
 
+	ORG	0x7c00		; set code loading address
+
+	JMP	entry
+
 ;to start, firstly, we need initialize FAT12 file system.
-DB 0xeb, 0x4e, 0x90
+DB  0x90
 DB "MONKOS  "		; name of Boot
 DW	512				; size of sector
 DB	1				; size of cluster
@@ -24,23 +28,37 @@ RESB 18
 
 
 ; body of OS
+entry:
+		MOV		AX,0			; init AX
+		MOV		SS,AX
+		MOV		SP,0x7c00		;从0x7c00开始执行
+		MOV		DS,AX
+		MOV		ES,AX
 
-DB		0xb8, 0x00, 0x00, 0x8e, 0xd0, 0xbc, 0x00, 0x7c
-DB		0x8e, 0xd8, 0x8e, 0xc0, 0xbe, 0x74, 0x7c, 0x8a
-DB		0x04, 0x83, 0xc6, 0x01, 0x3c, 0x00, 0x74, 0x09
-DB		0xb4, 0x0e, 0xbb, 0x0f, 0x00, 0xcd, 0x10, 0xeb
-DB		0xee, 0xf4, 0xeb, 0xfd
+		MOV		SI,msg
+putloop:
+		MOV		AL,[SI]
+		ADD		SI,1			; SI + 1
+		CMP		AL,0
+		JE		fin
+		MOV		AH,0x0e			; 
+		MOV		BX,15			; 
+		INT		0x10			; BIOS interrupt
+		JMP		putloop
+fin:
+		HLT						;
+		JMP		fin				;
 
-; show message on screen
+msg:
+		DB		0x0a, 0x0a		; 
+		DB		"hello, world"
+		DB		0x0a			; 
+		DB		0
 
-DB	0x0a, 0x0a			; change line
-DB	"Hello, world"		; real message
-DB	0x0a				; \n
-DB	0
+		RESB	0x7dfe-$		; 
 
-RESB	0x1fe-$			; fill out enough
-DB		0x55, 0xaa		; set the last 2 bytes, to make boot
-						; sector
+		DB		0x55, 0xaa
+
 
 ; code outside boot sector
 DB		0xf0, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00
