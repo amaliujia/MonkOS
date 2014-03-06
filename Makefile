@@ -11,7 +11,7 @@ DEL      = del
 default :
 	$(MAKE) img
 
-# 
+# make img
 
 ipl.bin : ipl.nas Makefile
 	$(NASK) ipl.nas ipl.bin ipl.lst
@@ -20,7 +20,7 @@ MonkOS.img : ipl.bin Makefile
 	$(EDIMG)   imgin:../z_tools/fdimg0at.tek \
 		wbinimg src:ipl.bin len:512 from:0 to:0   imgout:MonkOS.img
 
-# ƒRƒ}ƒ“ƒh
+# milestones
 
 asm :
 	$(MAKE) ipl.bin
