@@ -1,30 +1,30 @@
 ;start os
 ;TAB = 4
 
-	ORG	0x7c00		; set code loading address
+		ORG	0x7c00		; set code loading address
 
-	JMP	entry
+		JMP	entry
 
 ;to start, firstly, we need initialize FAT12 file system.
-DB  0x90
-DB "MONKOS  "		; name of Boot
-DW	512				; size of sector
-DB	1				; size of cluster
-DW	1				; starting position of FAT
-DB	2				; size of FAT, must 2
-DW  224				;
-DW	2880			; total num osf sectors
-DB	0xf0			; type of disk
-DW	9				; length of FAT
-DW	18  			;
-DW  2
-DD	0
-DD	2880
-DB	0, 0, 0x29
-DD	0xffffffff
-DB	"MONKOS     " 	; name of disk, 11 bytes
-DB	"FAT12   "		; Format name
-RESB 18				
+		DB  0x90
+		DB "MONKOS  "		; name of Boot
+		DW	512				; size of sector
+		DB	1				; size of cluster
+		DW	1				; starting position of FAT
+		DB	2				; size of FAT, must 2
+		DW  224				;
+		DW	2880			; total num osf sectors
+		DB	0xf0			; type of disk
+		DW	9				; length of FAT
+		DW	18  			;
+		DW  2
+		DD	0
+		DD	2880
+		DB	0, 0, 0x29
+		DD	0xffffffff
+		DB	"MONKOS     " 	; name of disk, 11 bytes
+		DB	"FAT12   "		; Format name
+		RESB 18				
 
 
 ; body of OS
