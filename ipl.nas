@@ -33,9 +33,36 @@ entry:
 		MOV		SS,AX
 		MOV		SP,0x7c00		;从0x7c00开始执行
 		MOV		DS,AX
-		MOV		ES,AX
+;loader
+		MOV	AX,0x0820
+		MOV ES,AX
+		MOV CH,0  				;柱面0
+		MOV DH,0 				;磁头0
+		MOV CL,2 				;扇区2 
 
-		MOV		SI,msg
+		MOV SI,0 				;记录读取失败次数
+
+retry:
+		MOV AH,0x02 			;设置读盘操作 0x02
+		MOV AL,1 				;读入一个扇区
+		MOV BX,0 			
+		MOV DL,0x00
+		INT 0x13 				;调用磁盘BIOS
+		JNC fin
+		ADD SI,1
+		CMP SI,5
+		JAE error    			;SI >= 5, jump tp error
+		MOV AH,0x00
+		MOV DL,0x00
+		INT 0x13
+		JMP retry
+fin:
+		HLT						;
+		JMP		fin				;
+
+error:
+		MOV SI,msg
+
 putloop:
 		MOV		AL,[SI]
 		ADD		SI,1			; SI + 1
@@ -45,9 +72,6 @@ putloop:
 		MOV		BX,15			; 
 		INT		0x10			; BIOS interrupt
 		JMP		putloop
-fin:
-		HLT						;
-		JMP		fin				;
 
 msg:
 		DB		0x0a, 0x0a		; 
@@ -58,10 +82,3 @@ msg:
 		RESB	0x7dfe-$		; 
 
 		DB		0x55, 0xaa
-
-
-; code outside boot sector
-DB		0xf0, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00
-RESB	4600
-DB		0xf0, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00
-RESB	1469432
