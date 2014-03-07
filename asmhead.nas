@@ -51,6 +51,10 @@ VRAM	EQU		0x0ff8			;显存地址
 
 
 ;GDT问题
+;32-bit breakthrough here
+;the essence of transformation from 16-bit to 32-bit is to change real mode to protected mode
+;In real mode circumstance, memory address can be calculated by adding base address and address offset
+;In protected mode, memory address can be gotten by segment descriptor.
 [INSTRSET "i486p"]				
 		LGDT	[GDTR0]			
 		MOV		EAX,CR0
@@ -76,15 +80,15 @@ pipelineflush:
 
 
 
-		MOV		ESI,0x7c00		; “]‘—Œ³
-		MOV		EDI,DSKCAC		; “]‘—æ
+		MOV		ESI,0x7c00		; 
+		MOV		EDI,DSKCAC		;
 		MOV		ECX,512/4
 		CALL	memcpy
 
 
 
-		MOV		ESI,DSKCAC0+512	; “]‘—Œ³
-		MOV		EDI,DSKCAC+512	; “]‘—æ
+		MOV		ESI,DSKCAC0+512	; 
+		MOV		EDI,DSKCAC+512	;
 		MOV		ECX,0
 		MOV		CL,BYTE [CYLS]
 		IMUL	ECX,512*18*2/4	
