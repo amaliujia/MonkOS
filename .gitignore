@@ -2,3 +2,9 @@
 *.bin
 *.lst
 haribote.sys
+*.hrb
+*.map
+bootpack.nas
+*.obj
+*.gas
+*.bim
