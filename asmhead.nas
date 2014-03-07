@@ -55,6 +55,7 @@ VRAM	EQU		0x0ff8			;显存地址
 ;the essence of transformation from 16-bit to 32-bit is to change real mode to protected mode
 ;In real mode circumstance, memory address can be calculated by adding base address and address offset
 ;In protected mode, memory address can be gotten by segment descriptor.
+
 [INSTRSET "i486p"]				
 		LGDT	[GDTR0]			
 		MOV		EAX,CR0
@@ -62,6 +63,7 @@ VRAM	EQU		0x0ff8			;显存地址
 		OR		EAX,0x00000001	
 		MOV		CR0,EAX
 		JMP		pipelineflush
+
 pipelineflush:
 		MOV		AX,1*8			
 		MOV		DS,AX
