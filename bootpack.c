@@ -1,16 +1,26 @@
 #include "bootpack.h"
 
+//显卡计算公式：0xa0000 + 行地址 + 列地址 * 320
+
 void HariMain(void)
 {
 	int i;
+	int xsize, ysize;
 	init_color();
-	char *p = (char *)0xa0000;
+	char *vram;
+	struct BOOTINFO *bootinfo;
+
+	bootinfo = (struct BOOTINFO *)0x0ff0;
+	xsize = bootinfo->scrnx;
+	ysize = bootinfo->scrny;
+	vram = bootinfo->vram;
+
+
 	// 0xa0000 is start addr of VRAM. We wirte 1 byte(I guess int will be cut into 1 byte or 8 bits) into every addr, then we control all this screen
-	for (i = 0; i < 0xfa00; ++i)
-	{
-		//write_mem8(i, 15);
-		*(p + i) = (i & 0x0f); 
-	}
+	//test colpr pallet
+	draw_box8(vram, xsize, COL8_FF0000, 0, 0, 30, 30);
+	draw_box8(vram, xsize, COL8_0000FF, 20, 10, 40, 40);
+	draw_box8(vram, xsize, COL8_008400, 10, 20, 80, 120);
 
 	for (;;)
 	{
@@ -63,4 +73,16 @@ void set_color(int start, int end, unsigned char *rgb)
 	}
 	io_store_eflags(eflags);
 	return;
+}
+
+void draw_box8(unsigned char *vram, int xsize, unsigned char c, int xs, int ys, int xe, int ye)
+{
+	int x, y;
+    for(y = ys; y <= ye; y++)
+    {
+    	for (x = xs; x <= xe;x++)
+    	{
+    		vram[x + y * xsize] = c;
+    	}
+    }
 }

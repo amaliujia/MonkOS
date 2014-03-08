@@ -13,6 +13,14 @@ void io_out32(int port, int data);
 int io_load_eflags(void);
 void io_store_eflags(int eflags);
 
+//Boot info
+struct BOOTINFO
+{
+	char cyls, leds, vmode, reserve;
+	short scrnx, scrny;
+	char *vram;
+};
+
 
 //screen
 #define COL8_000000		0   //黑
@@ -32,5 +40,9 @@ void io_store_eflags(int eflags);
 #define COL8_008484		14	//浅暗蓝
 #define COL8_848484		15	//暗灰
 
+//init related parameters of pallet
 void init_color();
+//set color pallet
 void set_color(int start, int end, unsigned char *rgb);
+//draw func, draw a rectangle on screen
+void draw_box8(unsigned char *vram, int xsize, unsigned char c, int xs, int ys, int xe, int ye);
