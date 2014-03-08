@@ -32,4 +32,5 @@ void io_store_eflags(int eflags);
 #define COL8_008484		14	//浅暗蓝
 #define COL8_848484		15	//暗灰
 
-void init_screen();
+void init_color();
+void set_color(int start, int end, unsigned char *rgb);
