@@ -9,6 +9,9 @@ FAT12 file system
 
 Initial Program Loader
 
-Open 32-bit mode
+Open protected mode
 
-Change to C language
+Turn to C language
+
+Set pallet
+
