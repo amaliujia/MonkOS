@@ -1,3 +1,4 @@
+//fundamental functions 
 void io_hlt(void);
 void write_mem8(int addr, int data);
 void io_cli(void);
@@ -11,3 +12,24 @@ void io_out16(int port, int data);
 void io_out32(int port, int data);
 int io_load_eflags(void);
 void io_store_eflags(int eflags);
+
+
+//screen
+#define COL8_000000		0   //黑
+#define COL8_FF0000		1   //亮红
+#define COL8_00FF00		2	//亮绿
+#define COL8_FFFF00		3	//亮黄
+#define COL8_0000FF		4	//亮蓝
+#define COL8_FF00FF		5	//亮紫
+#define COL8_00FFFF		6	//浅亮蓝
+#define COL8_FFFFFF		7	//白
+#define COL8_C6C6C6		8 	//亮灰
+#define COL8_840000		9	//暗红
+#define COL8_008400		10	//暗绿
+#define COL8_848400		11	//暗黄
+#define COL8_000084		12	//暗蓝
+#define COL8_840084		13	//暗紫
+#define COL8_008484		14	//浅暗蓝
+#define COL8_848484		15	//暗灰
+
+void init_screen();
