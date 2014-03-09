@@ -4,23 +4,23 @@
 
 void HariMain(void)
 {
-	int i;
-	int xsize, ysize;
-	init_color();
-	char *vram;
 	struct BOOTINFO *bootinfo;
-
 	bootinfo = (struct BOOTINFO *)0x0ff0;
-	xsize = bootinfo->scrnx;
-	ysize = bootinfo->scrny;
-	vram = bootinfo->vram;
+	
+	static char font_A[16] = {
+		0x00, 0x18, 0x18, 0x18, 0x18, 0x24, 0x24, 0x24,
+		0x24, 0x7e, 0x42, 0x42, 0x42, 0xe7, 0x00, 0x00
+	};
 
 
-	// 0xa0000 is start addr of VRAM. We wirte 1 byte(I guess int will be cut into 1 byte or 8 bits) into every addr, then we control all this screen
-	//test colpr pallet
-	draw_box8(vram, xsize, COL8_FF0000, 0, 0, 30, 30);
-	draw_box8(vram, xsize, COL8_0000FF, 20, 10, 40, 40);
-	draw_box8(vram, xsize, COL8_008400, 10, 20, 80, 120);
+	init_color();
+	init_screen(bootinfo->vram, bootinfo->scrnx, bootinfo->scrny);
+/*
+Draw Area
+*/
+
+	put_font8(bootinfo->vram, bootinfo->scrnx, COL8_FFFFFF, font_A, 10, 10);
+
 
 	for (;;)
 	{
@@ -85,4 +85,36 @@ void draw_box8(unsigned char *vram, int xsize, unsigned char c, int xs, int ys, 
     		vram[x + y * xsize] = c;
     	}
     }
+}
+
+
+void put_font8(unsigned char *vram, int xsize, unsigned char cf, char *c, int x, int y)
+{
+	int yo;
+	int i = 0;
+	char d;
+	for (yo = y; yo < y+16; ++yo)
+	{
+		d = c[i];
+		if ((d & 0x80) != 0) {vram[yo * xsize + x + 0] = cf;}
+		if ((d & 0x40) != 0) {vram[yo * xsize + x + 1] = cf;}
+		if ((d & 0x20) != 0) {vram[yo * xsize + x + 2] = cf;}
+		if ((d & 0x10) != 0) {vram[yo * xsize + x + 3] = cf;}
+		if ((d & 0x08) != 0) {vram[yo * xsize + x + 4] = cf;}
+		if ((d & 0x04) != 0) {vram[yo * xsize + x + 5] = cf;}
+		if ((d & 0x02) != 0) {vram[yo * xsize + x + 6] = cf;}
+		if ((d & 0x01) != 0) {vram[yo * xsize + x + 7] = cf;}
+		i++;
+	}
+	return;
+}
+
+void init_screen(char *vram, int xsize, int ysize)
+{
+	// 0xa0000 is start addr of VRAM. We wirte 1 byte(I guess int will be cut into 1 byte or 8 bits) into every addr, then we control all this screen
+	//draw wall paper
+	draw_box8(vram, xsize, COL8_008484,  0,         0,          xsize -  1, ysize);
+	// draw_box8(vram, xsize, COL8_C6C6C6,  0,         ysize - 28, xsize -  1, ysize - 28);
+	// draw_box8(vram, xsize, COL8_FFFFFF,  0,         ysize - 27, xsize -  1, ysize - 27);
+	// draw_box8(vram, xsize, COL8_C6C6C6,  0,         ysize - 26, xsize -  1, ysize -  1);
 }

@@ -44,5 +44,9 @@ struct BOOTINFO
 void init_color();
 //set color pallet
 void set_color(int start, int end, unsigned char *rgb);
+//init screen
+void init_screen(char *vram, int xsize, int ysize);
 //draw func, draw a rectangle on screen
 void draw_box8(unsigned char *vram, int xsize, unsigned char c, int xs, int ys, int xe, int ye);
+
+void put_font8(unsigned char *vram, int xsize, unsigned char cf, char *c, int x, int y);
