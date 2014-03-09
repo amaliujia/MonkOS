@@ -7,11 +7,13 @@ Milestone
 ======
 FAT12 file system
 
-Initial Program Loader
+initial Program Loader
 
-Open protected mode
+open protected mode
 
-Turn to C language
+turn to C language
 
-Set pallet
+set pallet
+
+support ascii
 
