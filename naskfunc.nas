@@ -27,6 +27,8 @@
 	    						;flag 
 	    GLOBAL _io_store_eflags	;recover interrupt permission
 	    						;flag 
+	    GLOBAL	_load_gdtr	;operate GDTR 
+	    GLOBAL	_load_idtr	;operate IDTR
 
 [SECTION .text]				;imply real part of func
 _io_hlt:					;void io_hlt(void);
@@ -96,4 +98,16 @@ _io_store_eflags:	; void io_store_eflags(int eflags);
 		MOV		EAX,[ESP+4]
 		PUSH	EAX
 		POPFD		; POP EFLAGS
+		RET
+
+_load_gdtr:		; void load_gdtr(int limit, int addr);
+		MOV		AX,[ESP+4]		; limit
+		MOV		[ESP+6],AX
+		LGDT	[ESP+6]
+		RET
+
+_load_idtr:		; void load_idtr(int limit, int addr);
+		MOV		AX,[ESP+4]		; limit
+		MOV		[ESP+6],AX
+		LIDT	[ESP+6]
 		RET

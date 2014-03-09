@@ -59,3 +59,29 @@ void put_string8(unsigned char *vram, int xsize, unsigned char fontColor, char *
 void init_mouse_cursor8(char *mouse, char backgourdColor);
 //draw cursor and its backgourd
 void draw_cursor(char *vram, int xsize, int cursorXSize, int cursorYSize, int startPointX, int startPointY, char *cursorBuf, int backgourdXSize);
+
+
+// GDT
+
+//GDT descriptor structure
+struct SEGMENT_DESCRIPTOR
+{
+	short limit_low, base_low;
+	char base_mid, access_right;
+	char limit_high, base_high;
+};
+
+void init_gdtidt();
+void set_segmdesc(struct SEGMENT_DESCRIPTOR *sd, unsigned int limit, int base, int ar);
+//IDT
+
+//IDT descriptor structure
+struct GATE_DESCRIPTOR
+{
+	short offset_low, selector;
+	char dw_count, access_right;
+	short offset_high;
+};
+
+void set_gatedesc(struct GATE_DESCRIPTOR *gd, int offset, int selector, int ar);
+

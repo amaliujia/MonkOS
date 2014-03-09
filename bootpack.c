@@ -13,6 +13,7 @@ void HariMain(void)
 	int mx,my;
 	extern char hankaku[4096];
 	
+	init_gdtidt();
 	init_color();
 	init_screen(bootinfo->vram, bootinfo->scrnx, bootinfo->scrny);
 /*
@@ -190,5 +191,62 @@ void draw_cursor(char *vram, int xsize, int cursorXSize, int cursorYSize, int st
 			vram[(startPointY + y) * xsize + startPointX + x] = cursorBuf[y*backgourdXSize+x];
 		}
 	}
+	return;
+}
+
+
+void init_gdtidt()
+{
+	// 0x00270000, 打算把0x270000 - 0x27ffff 留给GDT用. 8B per segmdesc
+	struct SEGMENT_DESCRIPTOR *gdt = (struct SEGMENT_DESCRIPTOR *)0x00270000;
+	// 0x0026f800 - 0x0026ffff 留给IDT用
+	struct GATE_DESCRIPTOR *idt = (struct GATE_DESCRIPTOR *)0x0026f800;
+	// In the meantime, we put bootpack.h into 0x280000 - 0x2fffff.
+	int i;
+	/* initialize GDT */
+	for (i = 0; i < 8192; ++i)
+	{
+		set_segmdesc(gdt+i, 0, 0, 0);
+	}
+	// seg1是4GB，即32位下CPU能管理的最大段，基址从0开始
+	set_segmdesc(gdt+1, 0xffffffff, 0x00000000, 0x4092);
+	//seg2是512KB, 基址是0x280000，从来存bootpack.hrb
+	set_segmdesc(gdt+2, 0x0007ffff, 0x00280000, 0x409a);
+	//operator GDTR register
+	load_gdtr(0xffff, 0x00270000);
+
+	/*initialize IDT */
+	for (i = 0; i < 256; ++i)
+	{
+		set_gatedesc(idt+i, 0, 0, 0);
+	}
+	//operate LDTR register
+	load_idtr(0x7ff, 0x0026f800);
+
+	return;
+}
+
+void set_segmdesc(struct SEGMENT_DESCRIPTOR *sd, unsigned int limit, int base, int ar)
+{
+	if (limit > 0xfffff) {
+		ar |= 0x8000; /* G_bit = 1 */
+		limit /= 0x1000;
+	}
+	sd->limit_low    = limit & 0xffff;
+	sd->base_low     = base & 0xffff;
+	sd->base_mid     = (base >> 16) & 0xff;
+	sd->access_right = ar & 0xff;
+	sd->limit_high   = ((limit >> 16) & 0x0f) | ((ar >> 8) & 0xf0);
+	sd->base_high    = (base >> 24) & 0xff;
+	return;
+}
+
+void set_gatedesc(struct GATE_DESCRIPTOR *gd, int offset, int selector, int ar)
+{
+	gd->offset_low   = offset & 0xffff;
+	gd->selector     = selector;
+	gd->dw_count     = (ar >> 8) & 0xff;
+	gd->access_right = ar & 0xff;
+	gd->offset_high  = (offset >> 16) & 0xffff;
 	return;
 }
