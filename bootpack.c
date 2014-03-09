@@ -15,12 +15,11 @@ void HariMain(void)
 /*
 Draw Area
 */
-
-	put_font8(bootinfo->vram, bootinfo->scrnx, COL8_FFFFFF, hankaku+'A'*16, 10, 10);
-	put_font8(bootinfo->vram, bootinfo->scrnx, COL8_FFFFFF, hankaku+'B'*16, 18, 10);
-	put_font8(bootinfo->vram, bootinfo->scrnx, COL8_FFFFFF, hankaku+'C'*16, 26, 10);
-	put_font8(bootinfo->vram, bootinfo->scrnx, COL8_FFFFFF, hankaku+'D'*16, 34, 10);
-
+	// put_font8(bootinfo->vram, bootinfo->scrnx, COL8_FFFFFF, hankaku+'A'*16, 10, 10);
+	// put_font8(bootinfo->vram, bootinfo->scrnx, COL8_FFFFFF, hankaku+'B'*16, 18, 10);
+	// put_font8(bootinfo->vram, bootinfo->scrnx, COL8_FFFFFF, hankaku+'C'*16, 26, 10);
+	// put_font8(bootinfo->vram, bootinfo->scrnx, COL8_FFFFFF, hankaku+'D'*16, 34, 10);
+	put_string8(bootinfo->vram, bootinfo->scrnx, COL8_FFFFFF,"This is first string", 10, 10);
 
 	for (;;)
 	{
@@ -85,10 +84,11 @@ void draw_box8(unsigned char *vram, int xsize, unsigned char c, int xs, int ys, 
     		vram[x + y * xsize] = c;
     	}
     }
+    return;
 }
 
 
-void put_font8(unsigned char *vram, int xsize, unsigned char cf, char *c, int x, int y)
+void put_font8(unsigned char *vram, int xsize, unsigned char fontColor, char *c, int x, int y)
 {
 	int yo;
 	int i = 0;
@@ -117,4 +117,18 @@ void init_screen(char *vram, int xsize, int ysize)
 	// draw_box8(vram, xsize, COL8_C6C6C6,  0,         ysize - 28, xsize -  1, ysize - 28);
 	// draw_box8(vram, xsize, COL8_FFFFFF,  0,         ysize - 27, xsize -  1, ysize - 27);
 	// draw_box8(vram, xsize, COL8_C6C6C6,  0,         ysize - 26, xsize -  1, ysize -  1);
+	return;
+}
+
+void put_string8(unsigned char *vram, int xsize, unsigned char fontColor, char *str, int x, int y)
+{
+	extern char hankaku[4096];
+	char *temp;
+	int xt = x;
+	for (temp = str; *temp != 0x00; temp++)
+	{
+		put_font8(vram, xsize, fontColor, hankaku+(*temp)*16, xt, y);
+		xt += 8;
+	}
+	return;
 }

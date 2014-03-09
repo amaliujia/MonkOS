@@ -48,5 +48,7 @@ void set_color(int start, int end, unsigned char *rgb);
 void init_screen(char *vram, int xsize, int ysize);
 //draw func, draw a rectangle on screen
 void draw_box8(unsigned char *vram, int xsize, unsigned char c, int xs, int ys, int xe, int ye);
-
-void put_font8(unsigned char *vram, int xsize, unsigned char cf, char *c, int x, int y);
+//draw 8bit long font
+void put_font8(unsigned char *vram, int xsize, unsigned char fontColor, char *c, int x, int y);
+//draw string
+void put_string8(unsigned char *vram, int xsize, unsigned char fontColor, char *str, int x, int y);
