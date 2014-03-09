@@ -52,3 +52,10 @@ void draw_box8(unsigned char *vram, int xsize, unsigned char c, int xs, int ys, 
 void put_font8(unsigned char *vram, int xsize, unsigned char fontColor, char *c, int x, int y);
 //draw string
 void put_string8(unsigned char *vram, int xsize, unsigned char fontColor, char *str, int x, int y);
+
+//IO
+
+//init mouse cursor
+void init_mouse_cursor8(char *mouse, char backgourdColor);
+//draw cursor and its backgourd
+void draw_cursor(char *vram, int xsize, int cursorXSize, int cursorYSize, int startPointX, int startPointY, char *cursorBuf, int backgourdXSize);

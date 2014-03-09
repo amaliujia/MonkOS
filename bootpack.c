@@ -1,4 +1,5 @@
 #include "bootpack.h"
+#include <stdio.h>
 
 //显卡计算公式：0xa0000 + 行地址 + 列地址 * 320
 
@@ -7,7 +8,9 @@ void HariMain(void)
 
 	struct BOOTINFO *bootinfo;
 	bootinfo = (struct BOOTINFO *)0x0ff0;
-
+	char s[40];
+	char cursorBuf[256];
+	int mx,my;
 	extern char hankaku[4096];
 	
 	init_color();
@@ -15,11 +18,15 @@ void HariMain(void)
 /*
 Draw Area
 */
-	// put_font8(bootinfo->vram, bootinfo->scrnx, COL8_FFFFFF, hankaku+'A'*16, 10, 10);
-	// put_font8(bootinfo->vram, bootinfo->scrnx, COL8_FFFFFF, hankaku+'B'*16, 18, 10);
-	// put_font8(bootinfo->vram, bootinfo->scrnx, COL8_FFFFFF, hankaku+'C'*16, 26, 10);
-	// put_font8(bootinfo->vram, bootinfo->scrnx, COL8_FFFFFF, hankaku+'D'*16, 34, 10);
-	put_string8(bootinfo->vram, bootinfo->scrnx, COL8_FFFFFF,"This is first string", 10, 10);
+
+// mouse area
+	mx = bootinfo->scrnx / 2;
+	my = bootinfo->scrny / 2;
+	init_mouse_cursor8(cursorBuf, COL8_008484);
+	draw_cursor(bootinfo->vram, bootinfo->scrnx, 16, 16 , mx, my, cursorBuf, 16);
+
+	sprintf(s, "cursor coordinate (%d, %d)", mx, my);
+	put_string8(bootinfo->vram, bootinfo->scrnx, COL8_FFFFFF, s, 10, 10);
 
 	for (;;)
 	{
@@ -96,14 +103,14 @@ void put_font8(unsigned char *vram, int xsize, unsigned char fontColor, char *c,
 	for (yo = y; yo < y+16; ++yo)
 	{
 		d = c[i];
-		if ((d & 0x80) != 0) {vram[yo * xsize + x + 0] = cf;}
-		if ((d & 0x40) != 0) {vram[yo * xsize + x + 1] = cf;}
-		if ((d & 0x20) != 0) {vram[yo * xsize + x + 2] = cf;}
-		if ((d & 0x10) != 0) {vram[yo * xsize + x + 3] = cf;}
-		if ((d & 0x08) != 0) {vram[yo * xsize + x + 4] = cf;}
-		if ((d & 0x04) != 0) {vram[yo * xsize + x + 5] = cf;}
-		if ((d & 0x02) != 0) {vram[yo * xsize + x + 6] = cf;}
-		if ((d & 0x01) != 0) {vram[yo * xsize + x + 7] = cf;}
+		if ((d & 0x80) != 0) {vram[yo * xsize + x + 0] = fontColor;}
+		if ((d & 0x40) != 0) {vram[yo * xsize + x + 1] = fontColor;}
+		if ((d & 0x20) != 0) {vram[yo * xsize + x + 2] = fontColor;}
+		if ((d & 0x10) != 0) {vram[yo * xsize + x + 3] = fontColor;}
+		if ((d & 0x08) != 0) {vram[yo * xsize + x + 4] = fontColor;}
+		if ((d & 0x04) != 0) {vram[yo * xsize + x + 5] = fontColor;}
+		if ((d & 0x02) != 0) {vram[yo * xsize + x + 6] = fontColor;}
+		if ((d & 0x01) != 0) {vram[yo * xsize + x + 7] = fontColor;}
 		i++;
 	}
 	return;
@@ -129,6 +136,59 @@ void put_string8(unsigned char *vram, int xsize, unsigned char fontColor, char *
 	{
 		put_font8(vram, xsize, fontColor, hankaku+(*temp)*16, xt, y);
 		xt += 8;
+	}
+	return;
+}
+
+void init_mouse_cursor8(char *mouse, char backgourdColor)
+{
+	static char cursor[16][16] = {
+		"**************..",
+		"*OOOOOOOOOOO*...",
+		"*OOOOOOOOOO*....",
+		"*OOOOOOOOO*.....",
+		"*OOOOOOOO*......",
+		"*OOOOOOO*.......",
+		"*OOOOOOO*.......",
+		"*OOOOOOOO*......",
+		"*OOOO**OOO*.....",
+		"*OOO*..*OOO*....",
+		"*OO*....*OOO*...",
+		"*O*......*OOO*..",
+		"**........*OOO*.",
+		"*..........*OOO*",
+		"............*OO*",
+		".............***"
+	};
+	int x, y;
+
+	for (y = 0; y < 16; y++) {
+		for (x = 0; x < 16; x++) {
+			if (cursor[y][x] == '*') {
+				mouse[y * 16 + x] = COL8_000000;
+			}
+			if (cursor[y][x] == 'O') {
+				mouse[y * 16 + x] = COL8_FFFFFF;
+			}
+			if (cursor[y][x] == '.') {
+				mouse[y * 16 + x] = backgourdColor;
+			}
+		}
+	}
+	return;
+
+}
+
+void draw_cursor(char *vram, int xsize, int cursorXSize, int cursorYSize, int startPointX, int startPointY, char *cursorBuf, int backgourdXSize)
+{
+	int x, y;
+	//int i = 0;
+	for (y = 0; y < cursorYSize; y++)
+	{
+		for (x = 0; x < cursorXSize; x++)
+		{
+			vram[(startPointY + y) * xsize + startPointX + x] = cursorBuf[y*backgourdXSize+x];
+		}
 	}
 	return;
 }
