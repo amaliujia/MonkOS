@@ -4,22 +4,22 @@
 
 void HariMain(void)
 {
+
 	struct BOOTINFO *bootinfo;
 	bootinfo = (struct BOOTINFO *)0x0ff0;
+
+	extern char hankaku[4096];
 	
-	static char font_A[16] = {
-		0x00, 0x18, 0x18, 0x18, 0x18, 0x24, 0x24, 0x24,
-		0x24, 0x7e, 0x42, 0x42, 0x42, 0xe7, 0x00, 0x00
-	};
-
-
 	init_color();
 	init_screen(bootinfo->vram, bootinfo->scrnx, bootinfo->scrny);
 /*
 Draw Area
 */
 
-	put_font8(bootinfo->vram, bootinfo->scrnx, COL8_FFFFFF, font_A, 10, 10);
+	put_font8(bootinfo->vram, bootinfo->scrnx, COL8_FFFFFF, hankaku+'A'*16, 10, 10);
+	put_font8(bootinfo->vram, bootinfo->scrnx, COL8_FFFFFF, hankaku+'B'*16, 18, 10);
+	put_font8(bootinfo->vram, bootinfo->scrnx, COL8_FFFFFF, hankaku+'C'*16, 26, 10);
+	put_font8(bootinfo->vram, bootinfo->scrnx, COL8_FFFFFF, hankaku+'D'*16, 34, 10);
 
 
 	for (;;)
