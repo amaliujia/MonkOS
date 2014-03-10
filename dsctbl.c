@@ -32,10 +32,21 @@ void init_gdtidt()
 	return;
 }
 
+/*
+	段属性，也就是段的访问属性，access_right or ar.
+	ar high 4 bit is 扩展访问权，GD00, G means Gbit，D means 段的模式，1代指32位，0代指16位
+	ar low 8 bit. 
+	0x00: 未使用的记录表(descriptor table)
+	0x92：系统专用段，可读写，不可执行
+	0x9a：系统专用，可执行段，可读不可写
+	0xf2：应用程序用，可读写段，不可执行
+	0xfa：应用程序段，可执行段，可读不可写
+*/
 void set_segmdesc(struct SEGMENT_DESCRIPTOR *sd, unsigned int limit, int base, int ar)
 {
 	if (limit > 0xfffff) {
-		ar |= 0x8000; /* G_bit = 1 */
+		ar |= 0x8000; /* G_bit = 1 CPU将段的每一位解释为一页*/
+		//段上限只有20位，也就是1M.但由于1page=4KB，1M*4KB=4GB
 		limit /= 0x1000;
 	}
 	sd->limit_low    = limit & 0xffff;

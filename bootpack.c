@@ -14,6 +14,7 @@ void HariMain(void)
 	//extern char hankaku[4096];
 	
 	init_gdtidt();
+	init_pic();
 	init_color();
 	init_screen(bootinfo->vram, bootinfo->scrnx, bootinfo->scrny);
 /*
