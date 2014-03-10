@@ -3,6 +3,10 @@ MonkOS
 
 a OS with User Interface
 
+Code
+======
+975 lines
+
 Milestone
 ======
 FAT12 file system
@@ -16,4 +20,8 @@ turn to C language
 set pallet
 
 support ascii
+
+wirte interrupt handlers
+
+deal with keyboard input
 
