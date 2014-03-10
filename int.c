@@ -3,9 +3,14 @@
 void init_pic(void)
 
 {
+	//IMR是8位中断屏蔽寄存器，每一位对应一个口，设置为1即为屏蔽
 	io_out8(PIC0_IMR,  0xff  ); /* 禁止所有中断 */
+	//PIC0,PIC1各有一个IMR
 	io_out8(PIC1_IMR,  0xff  ); /* 禁止所有中断 */
 
+	//设置一组硬件，不太理解。ICW1和ICW4似乎有规定的值，就是得这么设定
+	//ICW2自由设置，负责分配中断信号和中断口的对应关系
+	//ICW3有关主从PIC的设置
 	io_out8(PIC0_ICW1, 0x11  ); /* 边沿触发模式 edge trigger mode*/
 	io_out8(PIC0_ICW2, 0x20  ); /* IRQ0-7由INT20-27接收*/
 	io_out8(PIC0_ICW3, 1 << 2); /* PIC1由IRQ2连接*/
@@ -20,4 +25,24 @@ void init_pic(void)
 	io_out8(PIC1_IMR,  0xff  ); /* 11111111 禁止所有中断*/
 
 	return;
+}
+
+void inthandler21(int *esp)
+{
+	struct BOOTINFO *bootinfo = (struct BOOTINFO *)BOOTINFO_ADDR;
+	draw_box8(bootinfo->vram, bootinfo->scrnx, COL8_000000, 0, 0, 32*8-1, 15);
+	put_string8(bootinfo->vram, bootinfo->scrnx, COL8_FFFFFF, "Keyboard input gets in", 0, 0);
+	for (;;) {
+		io_hlt();
+	}
+}	
+
+void inthandler2c(int *esp)
+{
+	struct BOOTINFO *bootinfo = (struct BOOTINFO *)BOOTINFO_ADDR;
+	draw_box8(bootinfo->vram, bootinfo->scrnx, COL8_000000, 0, 16, 32*8-1, 15);
+	put_string8(bootinfo->vram, bootinfo->scrnx, COL8_FFFFFF, "Mouse input gets in", 0, 16);
+	for (;;) {
+		io_hlt();
+	}
 }

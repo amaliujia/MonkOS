@@ -4,30 +4,38 @@
 void init_gdtidt()
 {
 	// 0x00270000, 打算把0x270000 - 0x27ffff 留给GDT用. 8B per segmdesc
-	struct SEGMENT_DESCRIPTOR *gdt = (struct SEGMENT_DESCRIPTOR *)0x00270000;
+	struct SEGMENT_DESCRIPTOR *gdt = (struct SEGMENT_DESCRIPTOR *)ADR_GDT;
 	// 0x0026f800 - 0x0026ffff 留给IDT用
-	struct GATE_DESCRIPTOR *idt = (struct GATE_DESCRIPTOR *)0x0026f800;
+	struct GATE_DESCRIPTOR *idt = (struct GATE_DESCRIPTOR *)ADR_IDT;
 	// In the meantime, we put bootpack.h into 0x280000 - 0x2fffff.
 	int i;
 	/* initialize GDT */
-	for (i = 0; i < 8192; ++i)
+	for (i = 0; i < LIMIT_GDT/8; ++i)
 	{
 		set_segmdesc(gdt+i, 0, 0, 0);
 	}
 	// seg1是4GB，即32位下CPU能管理的最大段，基址从0开始
-	set_segmdesc(gdt+1, 0xffffffff, 0x00000000, 0x4092);
+	set_segmdesc(gdt+1, 0xffffffff, 0x00000000, AR_DATA32_RW);
 	//seg2是512KB, 基址是0x280000，从来存bootpack.hrb
-	set_segmdesc(gdt+2, 0x0007ffff, 0x00280000, 0x409a);
+	set_segmdesc(gdt+2, LIMIT_BOTPAK, ADR_BOTPAK, AR_CODE32_ER);
 	//operator GDTR register
-	load_gdtr(0xffff, 0x00270000);
+	load_gdtr(LIMIT_GDT, ADR_GDT);
 
 	/*initialize IDT */
-	for (i = 0; i < 256; ++i)
+	for (i = 0; i < LIMIT_IDT/8; ++i)
 	{
 		set_gatedesc(idt+i, 0, 0, 0);
 	}
 	//operate LDTR register
-	load_idtr(0x7ff, 0x0026f800);
+	load_idtr(LIMIT_IDT, ADR_IDT);
+
+	/*
+		Set IDT
+	*/
+	// set_gatedesc(idt+0x21, (int) asm_inthandler21, 2*8, AR_INTGATE32);
+	// set_gatedesc(idt+0x2c, (int) asm_inthandler2c, 2*8, AR_INTGATE32);
+	set_gatedesc(idt + 0x21, (int) asm_inthandler21, 2 * 8, AR_INTGATE32);
+	set_gatedesc(idt + 0x2c, (int) asm_inthandler2c, 2 * 8, AR_INTGATE32);
 
 	return;
 }
