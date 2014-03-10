@@ -46,11 +46,11 @@ bootpack.hrb : bootpack.bim Makefile
 haribote.sys : asmhead.bin bootpack.hrb Makefile
 	copy /B asmhead.bin+bootpack.hrb haribote.sys
 
-haribote.img : ipl10.bin haribote.sys Makefile
+MonkOS.img : ipl10.bin haribote.sys Makefile
 	$(EDIMG)   imgin:../z_tools/fdimg0at.tek \
 		wbinimg src:ipl10.bin len:512 from:0 to:0 \
 		copy from:haribote.sys to:@: \
-		imgout:haribote.img
+		imgout:MonkOS.img
 
 %.gas : %.c Makefile
 	$(CC1) -o $*.gas $*.c
@@ -63,16 +63,16 @@ haribote.img : ipl10.bin haribote.sys Makefile
 
 
 img :
-	$(MAKE) haribote.img
+	$(MAKE) MonkOS.img
 
 run :
 	$(MAKE) img
-	$(COPY) haribote.img ..\z_tools\qemu\fdimage0.bin
+	$(COPY) MonkOS.img ..\z_tools\qemu\fdimage0.bin
 	$(MAKE) -C ../z_tools/qemu
 
 install :
 	$(MAKE) img
-	$(IMGTOL) w a: haribote.img
+	$(IMGTOL) w a: MonkOS.img
 
 clean :
 	-$(DEL) *.bin
@@ -85,4 +85,4 @@ clean :
 
 src_only :
 	$(MAKE) clean
-	-$(DEL) haribote.img
+	-$(DEL) MonkOS.img

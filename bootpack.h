@@ -1,3 +1,4 @@
+#include <stdio.h>
 //fundamental functions 
 void io_hlt(void);
 void write_mem8(int addr, int data);
@@ -120,3 +121,15 @@ void set_gatedesc(struct GATE_DESCRIPTOR *gd, int offset, int selector, int ar);
 void init_pic(void);
 void asm_inthandler21(void);
 void asm_inthandler2c(void);
+
+
+//Keyboard
+struct KeyboardBuffer
+{
+	unsigned char data, flag;
+};
+//init keyboard buffer
+void init_KeyboardBuffer(struct KeyboardBuffer *keybuf);
+
+
+

@@ -83,12 +83,8 @@ void put_font8(unsigned char *vram, int xsize, unsigned char fontColor, char *c,
 
 void init_screen(char *vram, int xsize, int ysize)
 {
-	// 0xa0000 is start addr of VRAM. We wirte 1 byte(I guess int will be cut into 1 byte or 8 bits) into every addr, then we control all this screen
-	//draw wall paper
+
 	draw_box8(vram, xsize, COL8_008484,  0,         0,          xsize -  1, ysize);
-	// draw_box8(vram, xsize, COL8_C6C6C6,  0,         ysize - 28, xsize -  1, ysize - 28);
-	// draw_box8(vram, xsize, COL8_FFFFFF,  0,         ysize - 27, xsize -  1, ysize - 27);
-	// draw_box8(vram, xsize, COL8_C6C6C6,  0,         ysize - 26, xsize -  1, ysize -  1);
 	return;
 }
 

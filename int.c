@@ -1,5 +1,9 @@
 #include "bootpack.h"
 
+#define PORT_KEYBOARD 0x0060
+
+struct KeyboardBuffer akeyboardBuffer;
+
 void init_pic(void)
 
 {
@@ -27,14 +31,28 @@ void init_pic(void)
 	return;
 }
 
+
+
+void init_KeyboardBuffer(struct KeyboardBuffer *keybuf)
+{
+	
+	keybuf->flag = 0;
+	keybuf->data = 0;
+}
+
+
 void inthandler21(int *esp)
 {
-	struct BOOTINFO *bootinfo = (struct BOOTINFO *)BOOTINFO_ADDR;
-	draw_box8(bootinfo->vram, bootinfo->scrnx, COL8_000000, 0, 0, 32*8-1, 15);
-	put_string8(bootinfo->vram, bootinfo->scrnx, COL8_FFFFFF, "Keyboard input gets in", 0, 0);
-	for (;;) {
-		io_hlt();
+	unsigned char data;
+	//IRQ1中断已收到，向0x0060写入0x61, if it's IRQ3, write 0x63
+	io_out8(PIC0_OCW2 ,0x61);
+	data = io_in8(PORT_KEYBOARD);
+	if(akeyboardBuffer.flag == 0)
+	{
+		akeyboardBuffer.flag = 1;
+		akeyboardBuffer.data = data;
 	}
+	return;
 }	
 
 void inthandler2c(int *esp)
