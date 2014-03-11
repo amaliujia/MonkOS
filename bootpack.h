@@ -123,13 +123,17 @@ void asm_inthandler21(void);
 void asm_inthandler2c(void);
 
 
-//Keyboard
+//Keyboard and mouse
 struct KeyboardBuffer
 {
 	unsigned char data[32];
 	int start,end,len; 
 
 };
+void wait_KBC_sendready(void);
+void init_keyboard(void);
+void enable_mouse(void);
+
 //init keyboard buffer
 void init_KeyboardBuffer(struct KeyboardBuffer akeyboardBuffer);
 char KeyboardBuffer_Remove(struct KeyboardBuffer akeyboardBuffer);

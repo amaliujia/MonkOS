@@ -1,10 +1,10 @@
 #include "bootpack.h"
 
 #define PORT_KEYBOARD 0x0060
-
+#define PORT_KEYDAT	0x0060
 //struct KeyboardBuffer akeyboardBuffer;
 struct FIFOBuffer fifoBuffer;
-
+struct FIFOBuffer mourseFifoBuffer;
 void init_pic(void)
 
 {
@@ -46,41 +46,16 @@ void inthandler21(int *esp)
 
 void inthandler2c(int *esp)
 {
-	struct BOOTINFO *bootinfo = (struct BOOTINFO *)BOOTINFO_ADDR;
-	draw_box8(bootinfo->vram, bootinfo->scrnx, COL8_000000, 0, 16, 32*8-1, 15);
-	put_string8(bootinfo->vram, bootinfo->scrnx, COL8_FFFFFF, "Mouse input gets in", 0, 16);
-	for (;;) {
-		io_hlt();
-	}
+	unsigned char data;
+	io_out8(PIC1_OCW2, 0x64);	
+	io_out8(PIC0_OCW2, 0x62);
+	data = io_in8(PORT_KEYDAT);
+	FIFOBuffer_Add(&mourseFifoBuffer, data);
+	return;
 }
 
 
-void init_KeyboardBuffer(struct KeyboardBuffer akeyboardBuffer)
+void inthandler27(int *esp)
 {
-	akeyboardBuffer.start = 0;
-	akeyboardBuffer.end = 1;
-	akeyboardBuffer.len = 0;
-}
-
-void KeyboardBuffer_Add(char data, struct KeyboardBuffer akeyboardBuffer)
-{
-	akeyboardBuffer.start = akeyboardBuffer.start % 32;
-	akeyboardBuffer.end = akeyboardBuffer.end % 32;
-
-	if (akeyboardBuffer.start - akeyboardBuffer.end == 1 || akeyboardBuffer.end - akeyboardBuffer.start == 31)
-	{
-		return;
-	}else{
-		akeyboardBuffer.data[akeyboardBuffer.end] = data;
-		akeyboardBuffer.end = akeyboardBuffer.end + 1;
-		akeyboardBuffer.len++;
-		return;
-	}
-
-}
-
-char KeyboardBuffer_Remove(struct KeyboardBuffer akeyboardBuffer)
-{
-	akeyboardBuffer.len--;
-	return akeyboardBuffer.data[akeyboardBuffer.start++];
+	io_out8(PIC0_OCW2, 0x67); 
 }

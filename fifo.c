@@ -52,3 +52,37 @@ int FIFOBuffer_Status(struct FIFOBuffer *fifoBuffer)
 {
 	return fifoBuffer->size - fifoBuffer->space;
 }
+
+
+/*
+	Older verison of IO FIFO
+*/
+void init_KeyboardBuffer(struct KeyboardBuffer akeyboardBuffer)
+{
+	akeyboardBuffer.start = 0;
+	akeyboardBuffer.end = 1;
+	akeyboardBuffer.len = 0;
+}
+
+void KeyboardBuffer_Add(char data, struct KeyboardBuffer akeyboardBuffer)
+{
+	akeyboardBuffer.start = akeyboardBuffer.start % 32;
+	akeyboardBuffer.end = akeyboardBuffer.end % 32;
+
+	if (akeyboardBuffer.start - akeyboardBuffer.end == 1 || akeyboardBuffer.end - akeyboardBuffer.start == 31)
+	{
+		return;
+	}else{
+		akeyboardBuffer.data[akeyboardBuffer.end] = data;
+		akeyboardBuffer.end = akeyboardBuffer.end + 1;
+		akeyboardBuffer.len++;
+		return;
+	}
+
+}
+
+char KeyboardBuffer_Remove(struct KeyboardBuffer akeyboardBuffer)
+{
+	akeyboardBuffer.len--;
+	return akeyboardBuffer.data[akeyboardBuffer.start++];
+}
