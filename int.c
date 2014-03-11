@@ -2,7 +2,8 @@
 
 #define PORT_KEYBOARD 0x0060
 
-struct KeyboardBuffer akeyboardBuffer;
+//struct KeyboardBuffer akeyboardBuffer;
+struct FIFOBuffer fifoBuffer;
 
 void init_pic(void)
 
@@ -32,26 +33,14 @@ void init_pic(void)
 }
 
 
-
-void init_KeyboardBuffer(struct KeyboardBuffer *keybuf)
-{
-	
-	keybuf->flag = 0;
-	keybuf->data = 0;
-}
-
-
 void inthandler21(int *esp)
 {
 	unsigned char data;
 	//IRQ1中断已收到，向0x0060写入0x61, if it's IRQ3, write 0x63
 	io_out8(PIC0_OCW2 ,0x61);
 	data = io_in8(PORT_KEYBOARD);
-	if(akeyboardBuffer.flag == 0)
-	{
-		akeyboardBuffer.flag = 1;
-		akeyboardBuffer.data = data;
-	}
+	FIFOBuffer_Add(&fifoBuffer, data);
+	//process_show();
 	return;
 }	
 
@@ -63,4 +52,73 @@ void inthandler2c(int *esp)
 	for (;;) {
 		io_hlt();
 	}
+}
+
+
+void init_KeyboardBuffer(struct KeyboardBuffer akeyboardBuffer)
+{
+	akeyboardBuffer.start = 0;
+	akeyboardBuffer.end = 1;
+	akeyboardBuffer.len = 0;
+}
+
+void KeyboardBuffer_Add(char data, struct KeyboardBuffer akeyboardBuffer)
+{
+	akeyboardBuffer.start = akeyboardBuffer.start % 32;
+	akeyboardBuffer.end = akeyboardBuffer.end % 32;
+
+	if (akeyboardBuffer.start - akeyboardBuffer.end == 1 || akeyboardBuffer.end - akeyboardBuffer.start == 31)
+	{
+		return;
+	}else{
+		akeyboardBuffer.data[akeyboardBuffer.end] = data;
+		akeyboardBuffer.end = akeyboardBuffer.end + 1;
+		akeyboardBuffer.len++;
+		return;
+	}
+
+}
+
+char KeyboardBuffer_Remove(struct KeyboardBuffer akeyboardBuffer)
+{
+	akeyboardBuffer.len--;
+	return akeyboardBuffer.data[akeyboardBuffer.start++];
+}
+
+void process_show()
+{
+	static int count = 0;
+	char s[4];
+	struct BOOTINFO *bootinfo = (struct BOOTINFO *)BOOTINFO_ADDR;
+	sprintf(s, "count = %d",count++);
+	draw_box8(bootinfo->vram, bootinfo->scrnx, COL8_000000, 0, 60,  12*8,16);
+	put_string8(bootinfo->vram, bootinfo->scrnx, COL8_FFFFFF, s, 0, 60);
+	return;
+}
+
+void FIFOBuffer_show(struct FIFOBuffer *fifoBuffer)
+{
+    static int count = 0;
+	char s[100];
+	struct BOOTINFO *bootinfo = (struct BOOTINFO *)BOOTINFO_ADDR;
+
+	sprintf(s, "size :%d space:%d start:%d end:%d flag:%d", fifoBuffer->size,fifoBuffer->space,fifoBuffer->start,fifoBuffer->end,fifoBuffer->flags);
+	if(count == 0){
+		draw_box8(bootinfo->vram, bootinfo->scrnx, COL8_000000, 0, 60,  320,16);
+		put_string8(bootinfo->vram, bootinfo->scrnx, COL8_FFFFFF, s, 0, 60);
+		count++;
+	
+	}else if (count == 1)
+	{
+		draw_box8(bootinfo->vram, bootinfo->scrnx, COL8_000000, 0, 80,  320,16);
+		put_string8(bootinfo->vram, bootinfo->scrnx, COL8_FFFFFF, s, 0, 80);
+		count++;
+	}else{
+		draw_box8(bootinfo->vram, bootinfo->scrnx, COL8_000000, 0, 100,  320,16);
+		put_string8(bootinfo->vram, bootinfo->scrnx, COL8_FFFFFF, s, 0, 100);
+		count++;
+	}
+	return;
+	
+
 }

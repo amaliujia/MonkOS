@@ -126,10 +126,32 @@ void asm_inthandler2c(void);
 //Keyboard
 struct KeyboardBuffer
 {
-	unsigned char data, flag;
+	unsigned char data[32];
+	int start,end,len; 
+
 };
 //init keyboard buffer
-void init_KeyboardBuffer(struct KeyboardBuffer *keybuf);
+void init_KeyboardBuffer(struct KeyboardBuffer akeyboardBuffer);
+char KeyboardBuffer_Remove(struct KeyboardBuffer akeyboardBuffer);
+void KeyboardBuffer_Add(char data, struct KeyboardBuffer akeyboardBuffer);
+//universal IO buffer
+struct FIFOBuffer
+{
+	unsigned char *buf;
+	int start, end, size, space, flags;
+};
+// UIOBuffer init func
+void FIFOBuffer_Init(struct FIFOBuffer *fifoBuffer, int size, unsigned char *buf);
+//UIOBuffer add func
+int FIFOBuffer_Add(struct FIFOBuffer *fifoBuffer, unsigned char data);
+//UIOBuffer get func
+int FIFOBuffer_Get(struct FIFOBuffer *fifoBuffer);
+//UIOBuffer status func
+int FIFOBuffer_Status(struct FIFOBuffer *fifoBuffer);
 
 
-
+/*
+Debug func
+*/
+void process_show();
+void FIFOBuffer_show(struct FIFOBuffer *fifoBuffer);
