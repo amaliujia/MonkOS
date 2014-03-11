@@ -3,9 +3,6 @@ MonkOS
 
 a OS with User Interface
 
-Code
-======
-975 lines
 
 Milestone
 ======
