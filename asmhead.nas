@@ -35,10 +35,12 @@ VRAM	EQU		0x0ff8			;显存地址
 		OUT		0x21,AL
 		NOP					
 		OUT		0xa1,AL
-
-		CLI	
+		;相当于io_out(0x21,0xff),io_out(0xa1,0xff)
+		;意思是禁止主PIC和从PIC的中断
+		CLI		;禁止CPU级别的中断
 
 ; A20
+;A20Gate
 
 		CALL	waitkbdout
 		MOV		AL,0xd1
@@ -56,6 +58,7 @@ VRAM	EQU		0x0ff8			;显存地址
 ;In real mode circumstance, memory address can be calculated by adding base address and address offset
 ;In protected mode, memory address can be gotten by segment descriptor.
 
+;以下是切换到保护模式
 [INSTRSET "i486p"]				
 		LGDT	[GDTR0]			
 		MOV		EAX,CR0
@@ -73,7 +76,7 @@ pipelineflush:
 		MOV		SS,AX
 
 ; bootpack
-
+;转送bootpack
 		MOV		ESI,bootpack	
 		MOV		EDI,BOTPAK		
 		MOV		ECX,512*1024/4
@@ -81,6 +84,7 @@ pipelineflush:
 
 
 
+;将启动扇区转送到0x00100000
 
 		MOV		ESI,0x7c00		; 
 		MOV		EDI,DSKCAC		;
@@ -88,7 +92,7 @@ pipelineflush:
 		CALL	memcpy
 
 
-
+;将剩下的，也就是开始于0x000082000的内容，复制到0x00100200之后去
 		MOV		ESI,DSKCAC0+512	; 
 		MOV		EDI,DSKCAC+512	;
 		MOV		ECX,0
@@ -99,7 +103,7 @@ pipelineflush:
 
 
 
-; bootpack
+; 启动bootpack
 
 		MOV		EBX,BOTPAK
 		MOV		ECX,[EBX+16]
@@ -135,8 +139,8 @@ memcpy:
 ; 初始化0号段
 GDT0:
 		RESB	8				
-		DW		0xffff,0x0000,0x9200,0x00cf	
-		DW		0xffff,0x0000,0x9a28,0x0047
+		DW		0xffff,0x0000,0x9200,0x00cf	;可以读写的段
+		DW		0xffff,0x0000,0x9a28,0x0047 ;可以执行的段
 
 		DW		0
 GDTR0:

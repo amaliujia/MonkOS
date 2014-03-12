@@ -11,6 +11,7 @@ void HariMain(void)
 
 	struct BOOTINFO *bootinfo = (struct BOOTINFO *)BOOTINFO_ADDR;
 	char s[40], cursorBuf[256], keyBuf[32], mouBuf[128];
+	char mouses[40];
 	int mx, my;
 	int i = 0;
 	int mouseCheckerStatus;
@@ -75,6 +76,24 @@ Draw Area
 					}
 					draw_box8(bootinfo->vram, bootinfo->scrnx, COL8_000000, 0, 16,  12*8*3, 32);
 					put_string8(bootinfo->vram, bootinfo->scrnx, COL8_FFFFFF, s, 0, 16);
+					
+					draw_box8(bootinfo->vram, bootinfo->scrnx, COL8_008484, mx, my, mx+16, my+16);
+
+					mx += mouseChecker.x;
+					my -= mouseChecker.y;
+
+					if(mx < 0)
+						mx = 0;
+					if(my < -16)
+						my = -16;
+					if(mx > bootinfo->scrnx-16 )
+						mx = bootinfo->scrnx-16 ;
+					if(my > bootinfo->scrny + 16)
+						my = bootinfo->scrny + 16;
+					sprintf(mouses, "x=%d y=%d",mx, my);
+					draw_box8(bootinfo->vram, bootinfo->scrnx, COL8_000000, 12*8+10, 0,  12*8+12*8+10,16);
+					put_string8(bootinfo->vram, bootinfo->scrnx, COL8_FFFFFF, mouses, 12*8+10, 0);
+					draw_cursor(bootinfo->vram, bootinfo->scrnx, 16, 16 , mx, my, cursorBuf, 16);
 				}		
 
 			}
