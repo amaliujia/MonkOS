@@ -45,7 +45,7 @@ void set_color(int start, int end, unsigned char *rgb)
 	io_store_eflags(eflags);
 	return;
 }
-
+// 左上角的点和右下角的点
 void draw_box8(unsigned char *vram, int xsize, unsigned char c, int xs, int ys, int xe, int ye)
 {
 	int x, y;

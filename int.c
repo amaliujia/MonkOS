@@ -51,6 +51,7 @@ void inthandler2c(int *esp)
 	io_out8(PIC0_OCW2, 0x62);
 	data = io_in8(PORT_KEYDAT);
 	FIFOBuffer_Add(&mourseFifoBuffer, data);
+	//process_show();
 	return;
 }
 

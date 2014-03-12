@@ -22,3 +22,5 @@ wirte interrupt handlers
 
 deal with keyboard input
 
+deal with mouse input
+

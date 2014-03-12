@@ -134,6 +134,14 @@ void wait_KBC_sendready(void);
 void init_keyboard(void);
 void enable_mouse(void);
 
+struct MouseChecker{
+	char mouseCheckBuffer[3];
+	int phase;
+	int x, y, btn;
+};
+
+void init_MouseChecker(struct MouseChecker *checker);
+int MouseChecker_Job(struct MouseChecker *checker, int i);
 //init keyboard buffer
 void init_KeyboardBuffer(struct KeyboardBuffer akeyboardBuffer);
 char KeyboardBuffer_Remove(struct KeyboardBuffer akeyboardBuffer);
