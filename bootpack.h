@@ -189,7 +189,8 @@ struct MemoryManager
 	int free, maxFree, lostSize, losts;
 };
 void MemoryManagement_init(struct MemoryManager *memManager);
-
+unsigned int MemoryManagement_alloc(struct MemoryManager *memManager, unsigned int size);
+int MemoryManagement_free(struct MemoryManager *memManager, unsigned int address, unsigned int size);
 
 /*
 Debug func

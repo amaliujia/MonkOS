@@ -50,9 +50,6 @@ Draw Area
 	// draw_box8(bootinfo->vram, bootinfo->scrnx, COL8_008484, 0, 0, 12*8*2, 16);
 	// put_string8(bootinfo->vram, bootinfo->scrnx, 0, 0, COL8_FFFFFF, testString);
 	i = memtest(0x00400000, 0xbfffffff) / (1024 * 1024);
-//	draw_box8(bootinfo->vram, bootinfo->scrnx, COL8_000000, 0, 0,  320, bootinfo->scrny);
-	sprintf(s, "memory %dMB", i);
-	put_string8(bootinfo->vram, bootinfo->scrnx, COL8_FFFFFF, s, 0, 60);
 	
 	for (;;)
 	{
@@ -109,36 +106,3 @@ Draw Area
 	}
 }
 
-
-unsigned int memtest(unsigned int start ,unsigned int end)
-{
-	char flg486 = 0;
-	unsigned int eflg, cr0, i;
-
-	/* 判断CPU是386还是486及以后 */
-	eflg = io_load_eflags();
-	eflg |= EFLAGS_AC_BIT; /* AC-bit = 1 */
-	io_store_eflags(eflg);
-	eflg = io_load_eflags();
-	if ((eflg & EFLAGS_AC_BIT) != 0) { /* 386‚AC = 0 */
-		flg486 = 1;
-	}
-	eflg &= ~EFLAGS_AC_BIT;  //AC-bit = 0 
-	io_store_eflags(eflg);
-
-	if (flg486 != 0) {
-		cr0 = load_cr0();
-		cr0 |= CR0_CACHE_DISABLE; /* forbid cache*/
-		store_cr0(cr0);
-	}
-
-	i = memtest_sub(start, end);
-
-	if (flg486 != 0) {
-		cr0 = load_cr0();
-		cr0 &= ~CR0_CACHE_DISABLE; /* allow cache*/
-		store_cr0(cr0);
-	}
-
-	return i;
-}
