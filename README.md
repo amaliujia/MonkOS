@@ -24,3 +24,5 @@ deal with keyboard input
 
 deal with mouse input
 
+memory management
+
