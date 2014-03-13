@@ -29,9 +29,11 @@
 	    						;flag 
 	    GLOBAL	_load_gdtr	;operate GDTR 
 	    GLOBAL	_load_idtr	;operate IDTR
+	    GLOBAL	_load_cr0, _store_cr0 ;store CPU flag indicating cahce
 	    GLOBAL 	_asm_inthandler21 ;interrupt handler for keyboard which is 0x21.
 	    GLOBAL	_asm_inthandler2c
 	    GLOBAL  _asm_inthandler27
+	    GLOBAL	_memtest_sub
 	    EXTERN _inthandler21, _inthandler2c, _inthandler27
 
 [SECTION .text]				;imply real part of func
@@ -115,6 +117,48 @@ _load_idtr:		; void load_idtr(int limit, int addr);
 		MOV		AX,[ESP+4]		; limit
 		MOV		[ESP+6],AX
 		LIDT	[ESP+6]
+		RET
+; 操作缓存位 operate cache bit
+_load_cr0:		; int load_cr0(void);
+		MOV		EAX,CR0
+		RET
+
+_store_cr0:		; void store_cr0(int cr0);
+		MOV		EAX,[ESP+4]
+		MOV		CR0,EAX
+		RET
+
+_memtest_sub:	; unsigned int memtest_sub(unsigned int start, unsigned int end)
+		PUSH	EDI						; 
+		PUSH	ESI
+		PUSH	EBX
+		MOV		ESI,0xaa55aa55			; pat0 = 0xaa55aa55;
+		MOV		EDI,0x55aa55aa			; pat1 = 0x55aa55aa;
+		MOV		EAX,[ESP+12+4]			; i = start;
+mts_loop:
+		MOV		EBX,EAX
+		ADD		EBX,0xffc				; p = i + 0xffc;
+		MOV		EDX,[EBX]				; old = *p;
+		MOV		[EBX],ESI				; *p = pat0;
+		XOR		DWORD [EBX],0xffffffff	; *p ^= 0xffffffff;
+		CMP		EDI,[EBX]				; if (*p != pat1) goto fin;
+		JNE		mts_fin
+		XOR		DWORD [EBX],0xffffffff	; *p ^= 0xffffffff;
+		CMP		ESI,[EBX]				; if (*p != pat0) goto fin;
+		JNE		mts_fin
+		MOV		[EBX],EDX				; *p = old;
+		ADD		EAX,0x1000				; i += 0x1000;
+		CMP		EAX,[ESP+12+8]			; if (i <= end) goto mts_loop;
+		JBE		mts_loop
+		POP		EBX
+		POP		ESI
+		POP		EDI
+		RET
+mts_fin:
+		MOV		[EBX],EDX				; *p = old;
+		POP		EBX
+		POP		ESI
+		POP		EDI
 		RET
 
 ;Interrupts handlers

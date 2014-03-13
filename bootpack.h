@@ -161,9 +161,40 @@ int FIFOBuffer_Get(struct FIFOBuffer *fifoBuffer);
 //UIOBuffer status func
 int FIFOBuffer_Status(struct FIFOBuffer *fifoBuffer);
 
+/*
+Memory Management
+*/
+#define EFLAGS_AC_BIT	0x00040000
+#define CR0_CACHE_DISABLE	0x60000000
+
+int load_cr0(void);
+void store_cr0(int cr0);
+
+unsigned int memtest(unsigned int start ,unsigned int end);
+unsigned int memtest_sub(unsigned int start, unsigned int end);
+
+#define MEMORYMANAGEMENT	0x003c0000
+struct SegmentInfo
+{
+	unsigned int address, size;
+};
+
+struct MemoryManager	
+{
+	// free: segments available
+	// maxFree: frees' historical maximum number
+	// lostSize:total size of memory released wrongly
+	// losts: failed times
+	struct SegmentInfo segmentInfo[1000];
+	int free, maxFree, lostSize, losts;
+};
+void MemoryManagement_init(struct MemoryManager *memManager);
+
 
 /*
 Debug func
 */
 void process_show();
 void FIFOBuffer_show(struct FIFOBuffer *fifoBuffer);
+
+
