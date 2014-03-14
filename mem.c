@@ -31,28 +31,6 @@ unsigned int memtest(unsigned int start ,unsigned int end)
 	}
 	return i;
 }
-// unsigned int memtest_sub(unsigned int start, unsigned int end)
-// {
-// 	unsigned int i, *p, old, pat0 = 0xaa55aa55, pat1 = 0x55aa55aa;
-// 	for (i = start; i <= end; i += 0x1000) {
-// 		p = (unsigned int *) (i + 0xffc);
-// 		old = *p;			/* record old value */
-// 		*p = pat0;			/* assign test value */
-// 		*p ^= 0xffffffff;	/* 取反运算 */
-// 		if (*p != pat1) {	/* if is not equal to pat1 */
-// not_memory:
-// 			*p = old;
-// 			break;
-// 		}
-// 		*p ^= 0xffffffff;	/* 再次反转 */
-// 		if (*p != pat0) {	/* if not change back*/
-// 			goto not_memory;
-// 		}
-// 		*p = old;			/* Whatever, get back old value */
-// 	}
-// 	return i;
-// }
-
 
 void MemoryManagement_init(struct MemoryManager *memManager)
 {
@@ -89,21 +67,79 @@ unsigned int MemoryManagement_alloc(struct MemoryManager *memManager, unsigned i
 	return 0;
 }
 
-// struct SegmentInfo
-// {
-// 	unsigned int address, size;
-// };
-
-// struct MemoryManager	
-// {
-// 	// free: segments available
-// 	// maxFree: frees' historical maximum number
-// 	// lostSize:total size of memory released wrongly
-// 	// losts: failed times
-// 	struct SegmentInfo segmentInfo[1000];
-// 	int free, maxFree, lostSize, losts;
-// };
 int MemoryManagement_free(struct MemoryManager *memManager, unsigned int address, unsigned int size)
 {
-	
+	int i, j;
+	// sort by address
+	for(i = 0; i < memManager->free; i++)
+	{
+		if (memManager->segmentInfo[i].address > address)
+		{
+			break;
+		}
+	}
+	// segmentInfo[i-1] < address < segmentInfo[i]
+	if(i > 0)
+	{
+		if (memManager->segmentInfo[i-1].address + memManager->segmentInfo[i-1].size == address)	
+		{
+			memManager->segmentInfo[i-1].size += size;
+		}
+		if (i < memManager->free)
+		{
+			if (address + size == memManager->segmentInfo[i].address)
+			{
+				memManager->segmentInfo[i-1].size += memManager->segmentInfo[i].size;
+				// delete segmentInfo[i]
+				memManager->free--;
+				for (; i < memManager->free; ++i)
+				{
+					memManager->segmentInfo[i] = memManager->segmentInfo[i+1];
+				}
+			}
+			return 0;
+		}
+	}
+	// this address is largest, cannot merge with all segments
+	if(i < memManager->free)
+	{
+		if (address + size == memManager->segmentInfo[i].address)
+		{
+			memManager->segmentInfo[i].address = address;
+			memManager->segmentInfo[i].size += size;
+			return 0;
+		}
+	}
+
+	if(memManager->free < MEMMAN_FREES)
+	{
+		//segmentInfo[i]
+		for (j = memManager->free; j > i; j--)
+		{
+		 	memManager->segmentInfo[j] = memManager->segmentInfo[j-1];
+		}
+		memManager->free++;
+		if (memManager->maxFree < memManager->free)
+		{
+		 	memManager->maxFree = memManager->free;
+		}
+		memManager->segmentInfo[i].address = address;
+		memManager->segmentInfo[i].size = size;
+		return 0; 
+	}
+	// run out of slot
+	memManager->losts++;
+	memManager->lostSize += size;
+	return -1;
+}
+
+unsigned int MemoryManagement_current_free(struct MemoryManager *memManager)
+{
+	int i;
+	unsigned int total = 0;
+	for (i = 0; i < memManager->free; ++i)
+	{
+		total += memManager->segmentInfo[i].size;
+	}
+	return total;
 }

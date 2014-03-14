@@ -15,7 +15,7 @@ void HariMain(void)
 	int mx, my;
 	int i = 0;
 	unsigned int totalMemory;
-//	struct MemoryManager memoryManager;
+	struct MemoryManager *memoryManager = (struct memoryManager *)MEMMAN_ADDR;
 	int mouseCheckerStatus;
 	struct MouseChecker mouseChecker;
 	init_MouseChecker(&mouseChecker);
@@ -46,7 +46,13 @@ Draw Area
 	enable_mouse();
 
 	// 初始化内存管理
-
+    totalMemory = memtest(0x00400000, 0xbfffffff);
+	MemoryManagement_init(memoryManager);
+	MemoryManagement_free(memoryManager, 0x00001000, 0x0009e000);/* free 0x00001000 - 0x0009efff */
+	MemoryManagement_free(memoryManager, 0x00400000, totalMemory - 0x00400000);
+	sprintf(s, "%dMB, %dKB", totalMemory/(1024*1024), MemoryManagement_current_free(memoryManager)/1024);
+    //sprintf(s, "%dMB, %dKB", i, i);	
+	put_string8(bootinfo->vram, bootinfo->scrnx, COL8_FFFFFF, s, 0, 60);
 	for (;;)
 	{
 		io_cli();
