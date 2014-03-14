@@ -57,16 +57,54 @@ unsigned int memtest(unsigned int start ,unsigned int end)
 
 void MemoryManagement_init(struct MemoryManager *memManager)
 {
-	memManager.free = 0;
-	memManager.maxFree = 0;
-	memManager.lostSize = 0;
-	memManager.losts = 0;
+	memManager->free = 0;
+	memManager->maxFree = 0;
+	memManager->lostSize = 0;
+	memManager->losts = 0;
+	return;
 }
 unsigned int MemoryManagement_alloc(struct MemoryManager *memManager, unsigned int size)
 {
-
+	int i;
+	unsigned int addressResult;
+	for (i = 0; i < memManager->free; ++i)
+	{
+		if (memManager->segmentInfo[i].size >= size)
+		{
+			addressResult = memManager->segmentInfo[i].address;
+			memManager->segmentInfo[i].address += size;
+			memManager->segmentInfo[i].size -= size;
+	
+			if (memManager->segmentInfo[i].size == 0)
+			{
+				i++;
+				for (i; i < memManager->free; ++i)
+				{
+					memManager->segmentInfo[i-1] = memManager->segmentInfo[i]  ;
+				}
+				memManager->free -= 1;
+			}
+			return addressResult; 
+	    }
+	}
+	return 0;
 }
-int MemoryManagement_free(struct MemoryManager *memManager, unsigned int size)
+
+// struct SegmentInfo
+// {
+// 	unsigned int address, size;
+// };
+
+// struct MemoryManager	
+// {
+// 	// free: segments available
+// 	// maxFree: frees' historical maximum number
+// 	// lostSize:total size of memory released wrongly
+// 	// losts: failed times
+// 	struct SegmentInfo segmentInfo[1000];
+// 	int free, maxFree, lostSize, losts;
+// };
+int MemoryManagement_free(struct MemoryManager *memManager, unsigned int address, unsigned int size)
 {
 	
 }
