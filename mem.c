@@ -31,7 +31,6 @@ unsigned int memtest(unsigned int start ,unsigned int end)
 	}
 	return i;
 }
-
 // unsigned int memtest_sub(unsigned int start, unsigned int end)
 // {
 // 	unsigned int i, *p, old, pat0 = 0xaa55aa55, pat1 = 0x55aa55aa;

@@ -178,6 +178,8 @@ unsigned int memtest(unsigned int start ,unsigned int end);
 unsigned int memtest_sub(unsigned int start, unsigned int end);
 
 #define MEMORYMANAGEMENT	0x003c0000
+#define MEMMAN_FREES		4090
+//#define MEMMAN_ADDR			0x003c0000
 struct SegmentInfo
 {
 	unsigned int address, size;
@@ -192,9 +194,6 @@ struct MemoryManager
 	struct SegmentInfo segmentInfo[1000];
 	int free, maxFree, lostSize, losts;
 };
-void MemoryManagement_init(struct MemoryManager *memManager);
-unsigned int MemoryManagement_alloc(struct MemoryManager *memManager, unsigned int size);
-int MemoryManagement_free(struct MemoryManager *memManager, unsigned int address, unsigned int size);
 
 /*
 Debug func
