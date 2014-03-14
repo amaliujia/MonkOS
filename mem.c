@@ -57,7 +57,10 @@ unsigned int memtest(unsigned int start ,unsigned int end)
 
 void MemoryManagement_init(struct MemoryManager *memManager)
 {
-
+	memManager.free = 0;
+	memManager.maxFree = 0;
+	memManager.lostSize = 0;
+	memManager.losts = 0;
 }
 unsigned int MemoryManagement_alloc(struct MemoryManager *memManager, unsigned int size)
 {

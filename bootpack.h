@@ -140,12 +140,16 @@ struct MouseChecker{
 	int x, y, btn;
 };
 
+// mouse buffer methods
 void init_MouseChecker(struct MouseChecker *checker);
 int MouseChecker_Job(struct MouseChecker *checker, int i);
+
+// Older version of keyboard buffer, useless now
 //init keyboard buffer
 void init_KeyboardBuffer(struct KeyboardBuffer akeyboardBuffer);
 char KeyboardBuffer_Remove(struct KeyboardBuffer akeyboardBuffer);
 void KeyboardBuffer_Add(char data, struct KeyboardBuffer akeyboardBuffer);
+
 //universal IO buffer
 struct FIFOBuffer
 {

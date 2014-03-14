@@ -14,6 +14,8 @@ void HariMain(void)
 	char mouses[40];
 	int mx, my;
 	int i = 0;
+	unsigned int totalMemory;
+	struct MemoryManager memoryManager;
 	int mouseCheckerStatus;
 	struct MouseChecker mouseChecker;
 	init_MouseChecker(&mouseChecker);
@@ -49,8 +51,12 @@ Draw Area
 	// sprintf(testString, "%dMB", 1);
 	// draw_box8(bootinfo->vram, bootinfo->scrnx, COL8_008484, 0, 0, 12*8*2, 16);
 	// put_string8(bootinfo->vram, bootinfo->scrnx, 0, 0, COL8_FFFFFF, testString);
-	i = memtest(0x00400000, 0xbfffffff) / (1024 * 1024);
 	
+	// 初始化内存管理
+	totalMemory = memtest(0x00400000, 0xbfffffff);
+	MemoryManagement_init(memoryManager);
+	MemoryManagement_free(memoryManager, 0x00001000, 0x0009e000);/* free 0x00001000 - 0x0009efff */
+	MemoryManagement_free(memoryManager, 0x00400000, totalMemory - 0x00400000);
 	for (;;)
 	{
 		io_cli();
