@@ -200,6 +200,8 @@ void MemoryManagement_init(struct MemoryManager *memManager);
 unsigned int MemoryManagement_alloc(struct MemoryManager *memManager, unsigned int size);
 int MemoryManagement_free(struct MemoryManager *memManager, unsigned int address, unsigned int size);
 unsigned int MemoryManagement_current_free(struct MemoryManager *memManager);
+unsigned int MemoryManager_alloc_page(struct MemoryManager *memManager, unsigned int size);
+int MemoryManagement_free_page(struct MemoryManager *memManager, unsigned int address, unsigned int size);
 /*
 Debug func
 */

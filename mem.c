@@ -143,3 +143,19 @@ unsigned int MemoryManagement_current_free(struct MemoryManager *memManager)
 	}
 	return total;
 }
+
+unsigned int MemoryManager_alloc_page(struct MemoryManager *memManager, unsigned int size)
+{
+	unsigned int a;
+	size = (size + 0xfff) & 0xfffff000;
+	a = MemoryManagement_alloc(memManager, size);
+	return a;
+}
+
+int MemoryManagement_free_page(struct MemoryManager *memManager, unsigned int address, unsigned int size)
+{
+	int i;
+	size = (size + 0xfff) & 0xfffff000;
+	MemoryManagement_free(memManager, address, size);
+	return i;
+}
