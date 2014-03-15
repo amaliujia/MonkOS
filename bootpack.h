@@ -65,8 +65,35 @@ void init_mouse_cursor8(char *mouse, char backgourdColor);
 void draw_cursor(char *vram, int xsize, int cursorXSize, int cursorYSize, int startPointX, int startPointY, char *cursorBuf, int backgourdXSize);
 
 
-// GDT
+// screen layers
+#define MAX_SHEETS 256
 
+struct Sheet
+{
+	unsigned char *buf; // content of sheet
+	// bxsize : x size of sheet
+	// bysize : y size of sheet
+	// vx0, vy0 : coordinate of sheet
+	// col_inv : color and capacity
+	// height : height of sheet in layers
+	// flags : concrete setting of sheet
+	int bxsize, bysize, vx0, vy0, col_inv, height, flags;
+};
+
+//SHTCTL : sheets controller
+struct SHTCTL
+{
+	unsigned char *vram;
+	// xsize, ysize : size of screen
+	// top : the highest sheet 
+	int xsize, ysize, top;
+	struct Sheet *sheets[MAX_SHEETS];
+	struct Sheet sheets0[MAX_SHEETS];
+};
+
+struct SHTCTL *SHTCTL_init(struct MemoryManager* memManager, unsigned char *vram, int xsize, int ysize);
+
+// GDT
 //GDT descriptor structure
 struct SEGMENT_DESCRIPTOR
 {
@@ -200,7 +227,7 @@ void MemoryManagement_init(struct MemoryManager *memManager);
 unsigned int MemoryManagement_alloc(struct MemoryManager *memManager, unsigned int size);
 int MemoryManagement_free(struct MemoryManager *memManager, unsigned int address, unsigned int size);
 unsigned int MemoryManagement_current_free(struct MemoryManager *memManager);
-unsigned int MemoryManager_alloc_page(struct MemoryManager *memManager, unsigned int size);
+unsigned int MemoryManagement_alloc_page(struct MemoryManager *memManager, unsigned int size);
 int MemoryManagement_free_page(struct MemoryManager *memManager, unsigned int address, unsigned int size);
 /*
 Debug func
