@@ -65,34 +65,6 @@ void init_mouse_cursor8(char *mouse, char backgourdColor);
 void draw_cursor(char *vram, int xsize, int cursorXSize, int cursorYSize, int startPointX, int startPointY, char *cursorBuf, int backgourdXSize);
 
 
-// screen layers
-#define MAX_SHEETS 256
-
-struct Sheet
-{
-	unsigned char *buf; // content of sheet
-	// bxsize : x size of sheet
-	// bysize : y size of sheet
-	// vx0, vy0 : coordinate of sheet
-	// col_inv : color and capacity
-	// height : height of sheet in layers
-	// flags : concrete setting of sheet
-	int bxsize, bysize, vx0, vy0, col_inv, height, flags;
-};
-
-//SHTCTL : sheets controller
-struct SHTCTL
-{
-	unsigned char *vram;
-	// xsize, ysize : size of screen
-	// top : the highest sheet 
-	int xsize, ysize, top;
-	struct Sheet *sheets[MAX_SHEETS];
-	struct Sheet sheets0[MAX_SHEETS];
-};
-
-struct SHTCTL *SHTCTL_init(struct MemoryManager* memManager, unsigned char *vram, int xsize, int ysize);
-
 // GDT
 //GDT descriptor structure
 struct SEGMENT_DESCRIPTOR
@@ -236,3 +208,22 @@ void process_show();
 void FIFOBuffer_show(struct FIFOBuffer *fifoBuffer);
 
 
+// screen layers
+#define MAX_SHEETS		256
+struct SHEET {
+	unsigned char *buf;
+	int bxsize, bysize, vx0, vy0, col_inv, height, flags;
+};
+struct SHTCTL {
+	unsigned char *vram;
+	int xsize, ysize, top;
+	struct SHEET *sheets[MAX_SHEETS];
+	struct SHEET sheets0[MAX_SHEETS];
+};
+struct SHTCTL *shtctl_init(struct MemoryManager *memManager, unsigned char *vram, int xsize, int ysize);
+struct SHEET *sheet_alloc(struct SHTCTL *ctl);
+void sheet_setbuf(struct SHEET *sht, unsigned char *buf, int xsize, int ysize, int col_inv);
+void sheet_updown(struct SHTCTL *ctl, struct SHEET *sht, int height);
+void sheet_refresh(struct SHTCTL *ctl);
+void sheet_slide(struct SHTCTL *ctl, struct SHEET *sht, int vx0, int vy0);
+void sheet_free(struct SHTCTL *ctl, struct SHEET *sht);
