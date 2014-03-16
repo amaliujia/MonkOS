@@ -49,8 +49,8 @@ void HariMain(void)
 	MemoryManagement_free(memoryManager, 0x00400000, totalMemory - 0x00400000);
 	sprintf(s, "%dMB, %dKB", totalMemory/(1024*1024), MemoryManagement_current_free(memoryManager)/1024);
     //sprintf(s, "%dMB, %dKB", i, i);	
-	put_string8(buf_back, bootinfo->scrnx, COL8_FFFFFF, s, 0, 60);
-
+	// put_string8(buf_back, bootinfo->scrnx, COL8_FFFFFF, s, 0, 60);
+	// sheet_refresh(shtctl, sht_back, 0, 60, bootinfo->scrnx, 48);
 	// layer hierarchy
 //draw_cursor(bootinfo->vram, bootinfo->scrnx, 16, 16 , mx, my, cursorBuf, 16);
 	init_color();
@@ -70,7 +70,7 @@ void HariMain(void)
 	sheet_updown(shtctl, sht_mouse, 1);
 	sprintf(s, "(%3d, %3d)", mx, my);
 	put_string8(buf_back, bootinfo->scrnx, COL8_FFFFFF, s, 0, 0);
-	sheet_refresh(shtctl);
+	sheet_refresh(shtctl, sht_back, 0, 0, bootinfo->scrnx, 48);
 
 	for (;;)
 	{
@@ -85,7 +85,7 @@ void HariMain(void)
 				sprintf(s, "%02X", i);
 				draw_box8(buf_back, bootinfo->scrnx, COL8_008484, 0, 0,  12*8,16);
 				put_string8(buf_back, bootinfo->scrnx, COL8_FFFFFF, s, 0, 0);
-				sheet_refresh(shtctl);
+				sheet_refresh(shtctl, sht_back, 0, 0,  12*8,16);
 			}else if(FIFOBuffer_Status(&mourseFifoBuffer) != 0){
 				i = FIFOBuffer_Get(&mourseFifoBuffer);
 				io_sti();
@@ -103,7 +103,7 @@ void HariMain(void)
 					}
 					draw_box8(buf_back, bootinfo->scrnx, COL8_008484, 0, 16,  12*8*3, 32);
 					put_string8(buf_back, bootinfo->scrnx, COL8_FFFFFF, s, 0, 16);
-					
+					sheet_refresh(shtctl, sht_back, 0, 16,  12*8*3, 32);
 					draw_box8(buf_back, bootinfo->scrnx, COL8_008484, mx, my, mx+16, my+16);
 
 					mx += mouseChecker.x;
@@ -121,6 +121,7 @@ void HariMain(void)
 					draw_box8(buf_back, bootinfo->scrnx, COL8_008484, 12*8+10, 0,  12*8+12*8+10,16);
 					put_string8(buf_back, bootinfo->scrnx, COL8_FFFFFF, mouses, 12*8+10, 0);
 //					draw_cursor(bootinfo->vram, bootinfo->scrnx, 16, 16 , mx, my, cursorBuf, 16);
+					sheet_refresh(shtctl, sht_back, 12*8+10, 0,  12*8+12*8+10,16);
 					sheet_slide(shtctl, sht_mouse, mx, my);
 				}		
 
