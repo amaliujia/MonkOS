@@ -26,3 +26,4 @@ deal with mouse input
 
 memory management
 
+multi-windows and layer hierarchy
