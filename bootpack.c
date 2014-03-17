@@ -18,8 +18,8 @@ void HariMain(void)
 	int mouseCheckerStatus;
 	struct MouseChecker mouseChecker;
 	struct SHTCTL *shtctl;
-	struct SHEET *sht_back, *sht_mouse;
-	unsigned char *buf_back, buf_mouse[256];	
+	struct SHEET *sht_back, *sht_mouse, *sht_win;
+	unsigned char *buf_back, buf_mouse[256], *buf_win;	
 
 
 	init_MouseChecker(&mouseChecker);
@@ -48,17 +48,25 @@ void HariMain(void)
 	shtctl = shtctl_init(memoryManager, bootinfo->vram, bootinfo->scrnx, bootinfo->scrny);
 	sht_back = sheet_alloc(shtctl);
 	sht_mouse = sheet_alloc(shtctl);
+	sht_win = sheet_alloc(shtctl);
 	buf_back = (unsigned char *)MemoryManagement_alloc_page(memoryManager, bootinfo->scrnx * bootinfo->scrny);
+	buf_win = (unsigned char *)MemoryManagement_alloc_page(memoryManager, 160 * 68);
 	sheet_setbuf(sht_back, buf_back, bootinfo->scrnx, bootinfo->scrny, -1);
 	sheet_setbuf(sht_mouse, buf_mouse, 16, 16, 99);
+	sheet_setbuf(sht_win, buf_win, 160, 68, -1);
 	init_screen(buf_back, bootinfo->scrnx, bootinfo->scrny);
 	init_mouse_cursor8(buf_mouse, 99);
+	sheet_window(buf_win, 160, 68, "window");
+	put_string8(buf_win, 160, COL8_000000, "Welcome to", 24, 28);
+	put_string8(buf_win, 160, COL8_000000, "  Monk-OS", 24, 44);
 	sheet_slide(sht_back, 0, 0);
 	mx = (bootinfo->scrnx - 16) / 2;
 	my = (bootinfo->scrny - 16) / 2;
 	sheet_slide(sht_mouse, mx, my);
+	sheet_slide(sht_win, 80, 70);
 	sheet_updown(sht_back, 0);
-	sheet_updown(sht_mouse, 1);
+	sheet_updown(sht_mouse, 2);
+	sheet_updown(sht_win, 1);
 	sprintf(s, "(%3d, %3d)", mx, my);
 	put_string8(buf_back, bootinfo->scrnx, COL8_FFFFFF, s, 0, 0);
 	sheet_refresh(sht_back, 0, 0, bootinfo->scrnx, 48);
