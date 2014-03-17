@@ -1,15 +1,7 @@
 #include "bootpack.h"
 
-// struct SHTCTL *shtctl_init(struct MemoryManager *memManager, unsigned char *vram, int xsize, int ysize);
-// struct SHEET *sheet_alloc(struct SHTCTL *ctl);
-// void sheet_setbuf(struct SHEET *sht, unsigned char *buf, int xsize, int ysize, int col_inv);
-// void sheet_updown(struct SHTCTL *ctl, struct SHEET *sht, int height);
-// void sheet_refresh(struct SHTCTL *ctl);
-// void sheet_slide(struct SHTCTL *ctl, struct SHEET *sht, int vx0, int vy0);
-// void sheet_free(struct SHTCTL *ctl, struct SHEET *sht);
 //显卡计算公式：0xa0000 + 行地址 + 列地址 * 320
 
-//extern struct KeyboardBuffer akeyboardBuffer;
 extern struct FIFOBuffer fifoBuffer;
 extern struct FIFOBuffer mourseFifoBuffer;
 void HariMain(void)
@@ -61,18 +53,18 @@ void HariMain(void)
 	sheet_setbuf(sht_mouse, buf_mouse, 16, 16, 99);
 	init_screen(buf_back, bootinfo->scrnx, bootinfo->scrny);
 	init_mouse_cursor8(buf_mouse, 99);
-	sheet_slide(shtctl, sht_back, 0, 0);
+	sheet_slide(sht_back, 0, 0);
 	mx = (bootinfo->scrnx - 16) / 2;
 	my = (bootinfo->scrny - 16) / 2;
-	sheet_slide(shtctl, sht_mouse, mx, my);
-	sheet_updown(shtctl, sht_back, 0);
-	sheet_updown(shtctl, sht_mouse, 1);
+	sheet_slide(sht_mouse, mx, my);
+	sheet_updown(sht_back, 0);
+	sheet_updown(sht_mouse, 1);
 	sprintf(s, "(%3d, %3d)", mx, my);
 	put_string8(buf_back, bootinfo->scrnx, COL8_FFFFFF, s, 0, 0);
-	sheet_refresh(shtctl, sht_back, 0, 0, bootinfo->scrnx, 48);
+	sheet_refresh(sht_back, 0, 0, bootinfo->scrnx, 48);
 
 	put_string8(buf_back, bootinfo->scrnx, COL8_FFFFFF, memtest, 0, 60);
-	sheet_refresh(shtctl, sht_back, 0, 60, 40*16, 76);
+	sheet_refresh(sht_back, 0, 60, 40*16, 76);
 	for (;;)
 	{
 		io_cli();
@@ -86,7 +78,7 @@ void HariMain(void)
 				sprintf(s, "%02X", i);
 				draw_box8(buf_back, bootinfo->scrnx, COL8_008484, 0, 0,  12*8,16);
 				put_string8(buf_back, bootinfo->scrnx, COL8_FFFFFF, s, 0, 0);
-				sheet_refresh(shtctl, sht_back, 0, 0,  12*8,16);
+				sheet_refresh(sht_back, 0, 0,  12*8,16);
 			}else if(FIFOBuffer_Status(&mourseFifoBuffer) != 0){
 				i = FIFOBuffer_Get(&mourseFifoBuffer);
 				io_sti();
@@ -104,8 +96,7 @@ void HariMain(void)
 					}
 					draw_box8(buf_back, bootinfo->scrnx, COL8_008484, 0, 16,  12*8*3, 32);
 					put_string8(buf_back, bootinfo->scrnx, COL8_FFFFFF, s, 0, 16);
-					sheet_refresh(shtctl, sht_back, 0, 16,  12*8*3, 32);
-					draw_box8(buf_back, bootinfo->scrnx, COL8_008484, mx, my, mx+16, my+16);
+					sheet_refresh(sht_back, 0, 16,  12*8*3, 32);
 
 					mx += mouseChecker.x;
 					my -= mouseChecker.y;
@@ -118,11 +109,16 @@ void HariMain(void)
 						mx = bootinfo->scrnx - 1 ;
 					if(my > bootinfo->scrny - 1)
 						my = bootinfo->scrny - 1;
+
+					sprintf(s, "(%3d, %3d)", mx, my);
+					draw_box8(buf_back, bootinfo->scrnx, COL8_008484, 0, 0,12*8+12*8,16);
+					put_string8(buf_back, bootinfo->scrnx, COL8_FFFFFF, s, 0, 0);
+					sheet_refresh(sht_back, 0, 0, bootinfo->scrnx, 48);				
 					sprintf(mouses, "x=%d y=%d",mx, my);
 					draw_box8(buf_back, bootinfo->scrnx, COL8_008484, 12*8+10, 0,  12*8+12*8+10,16);
 					put_string8(buf_back, bootinfo->scrnx, COL8_FFFFFF, mouses, 12*8+10, 0);
-					sheet_refresh(shtctl, sht_back, 12*8+10, 0,  12*8+12*8+10,16);
-					sheet_slide(shtctl, sht_mouse, mx, my);
+					sheet_refresh(sht_back, 12*8+10, 0,  12*8+12*8+10,16);
+					sheet_slide(sht_mouse, mx, my);
 				}		
 
 			}
