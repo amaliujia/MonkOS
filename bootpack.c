@@ -112,16 +112,15 @@ void HariMain(void)
 
 					if(mx < 0)
 						mx = 0;
-					if(my < -16)
-						my = -16;
-					if(mx > bootinfo->scrnx-16 )
-						mx = bootinfo->scrnx-16 ;
-					if(my > bootinfo->scrny + 16)
-						my = bootinfo->scrny + 16;
+					if(my < 0)
+						my = 0;
+					if(mx > bootinfo->scrnx - 1)
+						mx = bootinfo->scrnx - 1 ;
+					if(my > bootinfo->scrny - 1)
+						my = bootinfo->scrny - 1;
 					sprintf(mouses, "x=%d y=%d",mx, my);
 					draw_box8(buf_back, bootinfo->scrnx, COL8_008484, 12*8+10, 0,  12*8+12*8+10,16);
 					put_string8(buf_back, bootinfo->scrnx, COL8_FFFFFF, mouses, 12*8+10, 0);
-//					draw_cursor(bootinfo->vram, bootinfo->scrnx, 16, 16 , mx, my, cursorBuf, 16);
 					sheet_refresh(shtctl, sht_back, 12*8+10, 0,  12*8+12*8+10,16);
 					sheet_slide(shtctl, sht_mouse, mx, my);
 				}		
