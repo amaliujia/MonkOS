@@ -16,7 +16,8 @@ void HariMain(void)
 {
 
 	struct BOOTINFO *bootinfo = (struct BOOTINFO *)BOOTINFO_ADDR;
-	char s[40], cursorBuf[256], keyBuf[32], mouBuf[128];
+	char s[40], keyBuf[32], mouBuf[128];
+	char memTest[40];
 	char mouses[40];
 	int mx, my;
 	int i = 0;
@@ -47,10 +48,8 @@ void HariMain(void)
 	MemoryManagement_init(memoryManager);
 	MemoryManagement_free(memoryManager, 0x00001000, 0x0009e000);/* free 0x00001000 - 0x0009efff */
 	MemoryManagement_free(memoryManager, 0x00400000, totalMemory - 0x00400000);
-	sprintf(s, "%dMB, %dKB", totalMemory/(1024*1024), MemoryManagement_current_free(memoryManager)/1024);
-    //sprintf(s, "%dMB, %dKB", i, i);	
-	// put_string8(buf_back, bootinfo->scrnx, COL8_FFFFFF, s, 0, 60);
-	// sheet_refresh(shtctl, sht_back, 0, 60, bootinfo->scrnx, 48);
+	sprintf(memtest, "%dMB, %dKB", totalMemory/(1024*1024), MemoryManagement_current_free(memoryManager)/1024);
+	 
 	// layer hierarchy
 //draw_cursor(bootinfo->vram, bootinfo->scrnx, 16, 16 , mx, my, cursorBuf, 16);
 	init_color();
@@ -72,6 +71,8 @@ void HariMain(void)
 	put_string8(buf_back, bootinfo->scrnx, COL8_FFFFFF, s, 0, 0);
 	sheet_refresh(shtctl, sht_back, 0, 0, bootinfo->scrnx, 48);
 
+	put_string8(buf_back, bootinfo->scrnx, COL8_FFFFFF, memtest, 0, 60);
+	sheet_refresh(shtctl, sht_back, 0, 60, 40*16, 76);
 	for (;;)
 	{
 		io_cli();
