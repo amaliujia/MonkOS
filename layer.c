@@ -30,8 +30,13 @@ struct SHTCTL *shtctl_init(struct MemoryManager *memManager, unsigned char *vram
 	int i;
 	// we alloc it, we can the whole thing
 	// include two arrays of layer
-	ctl = (struct SHTCTL *)MemoryManagement_alloc_page(memManager, sizeof (struct SHTCTL));
+	ctl = (struct SHTCTL *) MemoryManagement_alloc_page(memManager, sizeof (struct SHTCTL));
 	if (ctl == 0) {
+		goto err;
+	}
+	ctl->map = (unsigned char *) MemoryManagement_alloc_page(memManager, xsize * ysize);
+	if (ctl->map == 0) {
+		MemoryManagement_free_page(memManager, (int)ctl, sizeof (struct SHTCTL));
 		goto err;
 	}
 	ctl->vram = vram;
@@ -40,7 +45,7 @@ struct SHTCTL *shtctl_init(struct MemoryManager *memManager, unsigned char *vram
 	ctl->top = -1; // we don't have any sheet now
 	for (i = 0; i < MAX_SHEETS; i++) {
 		ctl->sheets0[i].flags = 0; //mark it as unused.
-		ctl->sheets0[i].ctl = ctl;
+		ctl->sheets0[i].ctl = ctl; 
 	}
 err:
 	return ctl;

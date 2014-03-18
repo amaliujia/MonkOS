@@ -4,6 +4,8 @@
 
 extern struct FIFOBuffer fifoBuffer;
 extern struct FIFOBuffer mourseFifoBuffer;
+
+
 void HariMain(void)
 {
 
@@ -25,10 +27,11 @@ void HariMain(void)
 	init_MouseChecker(&mouseChecker);
 	init_gdtidt();
 	init_pic();
+	io_sti();
 	FIFOBuffer_Init(&fifoBuffer, 32, keyBuf);
 	FIFOBuffer_Init(&mourseFifoBuffer, 128, mouBuf);
 	//设置CPU的开中断，CPU接收中断
-	io_sti();
+	init_pit();
 	io_out8(PIC0_IMR, 0xf9); 
 	io_out8(PIC1_IMR, 0xef); 
 

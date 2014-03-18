@@ -118,8 +118,11 @@ void set_gatedesc(struct GATE_DESCRIPTOR *gd, int offset, int selector, int ar);
 
 //initialize PIC
 void init_pic(void);
+void asm_inthandler20(void);
 void asm_inthandler21(void);
+void asm_inthandler27(void);
 void asm_inthandler2c(void);
+
 
 
 //Keyboard and mouse
@@ -216,7 +219,7 @@ struct SHEET {
 	struct SHTCTL *ctl;
 };
 struct SHTCTL {
-	unsigned char *vram;
+	unsigned char *vram, *map;
 	int xsize, ysize, top;
 	struct SHEET *sheets[MAX_SHEETS];
 	struct SHEET sheets0[MAX_SHEETS];
@@ -231,3 +234,9 @@ void sheet_free(struct SHEET *sht);
 void sheet_refreshsub(struct SHTCTL *ctl, int vx0, int vy0, int vx1, int vy1, int h0);
 
 void sheet_window(unsigned char *buf, int xsize, int ysize, char *title);
+
+/*
+	timer
+*/
+
+void init_pit(void);

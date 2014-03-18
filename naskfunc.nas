@@ -33,8 +33,9 @@
 	    GLOBAL 	_asm_inthandler21 ;interrupt handler for keyboard which is 0x21.
 	    GLOBAL	_asm_inthandler2c
 	    GLOBAL  _asm_inthandler27
+	    GLOBAL  _asm_inthandler20 ;timer interrupt handler
 	    GLOBAL	_memtest_sub
-	    EXTERN _inthandler21, _inthandler2c, _inthandler27
+	    EXTERN _inthandler21, _inthandler2c, _inthandler27, _inthandler20
 
 [SECTION .text]				;imply real part of func
 _io_hlt:					;void io_hlt(void);
@@ -162,6 +163,21 @@ mts_fin:
 		RET
 
 ;Interrupts handlers
+_asm_inthandler20:
+		PUSH	ES
+		PUSH	DS
+		PUSHAD
+		MOV		EAX,ESP
+		PUSH	EAX
+		MOV		AX,SS
+		MOV		DS,AX
+		MOV		ES,AX
+		CALL	_inthandler20
+		POP		EAX
+		POPAD
+		POP		DS
+		POP		ES
+		IRETD
 
 _asm_inthandler21:
 		PUSH	ES

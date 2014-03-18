@@ -32,6 +32,11 @@ void init_pic(void)
 	return;
 }
 
+void inthandler20(int *esp)
+{
+	io_out8(PIC0_OCW2, 0x60); //receive IRQ-00
+	return;
+}
 
 void inthandler21(int *esp)
 {
