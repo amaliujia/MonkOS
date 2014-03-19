@@ -3,11 +3,11 @@
 void process_show()
 {
 	static int count = 0;
-	char s[4];
+	char s[40];
 	struct BOOTINFO *bootinfo = (struct BOOTINFO *)BOOTINFO_ADDR;
-	sprintf(s, "count = %d",count++);
-	draw_box8(bootinfo->vram, bootinfo->scrnx, COL8_000000, 0, 60,  12*8,16);
-	put_string8(bootinfo->vram, bootinfo->scrnx, COL8_FFFFFF, s, 0, 60);
+	sprintf(s, "count= %010d",count++);
+	draw_box8(bootinfo->vram, bootinfo->scrnx, COL8_840000, 0, 120,  300,120+16);
+	put_string8(bootinfo->vram, bootinfo->scrnx, COL8_FFFFFF, s, 0, 120);
 	return;
 }
 

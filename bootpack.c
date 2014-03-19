@@ -4,7 +4,7 @@
 
 extern struct FIFOBuffer fifoBuffer;
 extern struct FIFOBuffer mourseFifoBuffer;
-
+extern struct TimerCTL timerCTL;
 
 void HariMain(void)
 {
@@ -32,7 +32,7 @@ void HariMain(void)
 	FIFOBuffer_Init(&mourseFifoBuffer, 128, mouBuf);
 	//设置CPU的开中断，CPU接收中断
 	init_pit();
-	io_out8(PIC0_IMR, 0xf9); 
+	io_out8(PIC0_IMR, 0xf8); 
 	io_out8(PIC1_IMR, 0xef); 
 
 	init_keyboard();
@@ -59,9 +59,9 @@ void HariMain(void)
 	sheet_setbuf(sht_win, buf_win, 160, 68, -1);
 	init_screen(buf_back, bootinfo->scrnx, bootinfo->scrny);
 	init_mouse_cursor8(buf_mouse, 99);
-	sheet_window(buf_win, 160, 68, "window");
-	put_string8(buf_win, 160, COL8_000000, "Welcome to", 24, 28);
-	put_string8(buf_win, 160, COL8_000000, "  Monk-OS", 24, 44);
+	sheet_window(buf_win, 160, 68, "Counter");
+//	put_string8(buf_win, 160, COL8_000000, "Welcome to", 24, 28);
+//	put_string8(buf_win, 160, COL8_000000, "  Monk-OS", 24, 44);
 	sheet_slide(sht_back, 0, 0);
 	mx = (bootinfo->scrnx - 16) / 2;
 	my = (bootinfo->scrny - 16) / 2;
@@ -78,6 +78,11 @@ void HariMain(void)
 	sheet_refresh(sht_back, 0, 60, 40*16, 76);
 	for (;;)
 	{
+		sprintf(s, "%010d", timerCTL.count);
+		draw_box8(buf_win, 160, COL8_C6C6C6, 20, 28, 119, 43);
+		put_string8(buf_win, 160, COL8_000000, s, 40, 28);
+		sheet_refresh(sht_win, 40, 28, 120, 44);
+//		process_show();
 		io_cli();
 		if (FIFOBuffer_Status(&fifoBuffer) + FIFOBuffer_Status(&mourseFifoBuffer) == 0)
 		{

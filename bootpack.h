@@ -238,5 +238,9 @@ void sheet_window(unsigned char *buf, int xsize, int ysize, char *title);
 /*
 	timer
 */
+struct TimerCTL
+{
+	unsigned int count;
+};
 
 void init_pit(void);
