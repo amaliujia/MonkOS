@@ -28,6 +28,7 @@ memory management
 
 multi-windows and layer hierarchy
 
+timer
 
 Copyright
 =======
