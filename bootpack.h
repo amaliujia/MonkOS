@@ -208,6 +208,7 @@ int MemoryManagement_free_page(struct MemoryManager *memManager, unsigned int ad
 Debug func
 */
 void process_show();
+void process_show_buddy();
 void FIFOBuffer_show(struct FIFOBuffer *fifoBuffer);
 
 
@@ -241,6 +242,12 @@ void sheet_window(unsigned char *buf, int xsize, int ysize, char *title);
 struct TimerCTL
 {
 	unsigned int count;
+	//记录离超时还有多少时间
+	unsigned int timeout;
+	//the fifo to record timeout flag
+	struct FIFOBuffer *fifo;
+	unsigned char data;
 };
 
 void init_pit(void);
+void settimer(unsigned int timeout, struct FIFOBuffer *fifo, unsigned char data);

@@ -11,6 +11,17 @@ void process_show()
 	return;
 }
 
+void process_show_buddy()
+{
+	static int count = 0;
+	char s[40];
+	struct BOOTINFO *bootinfo = (struct BOOTINFO *)BOOTINFO_ADDR;
+	sprintf(s, "count= %010d",count++);
+	draw_box8(bootinfo->vram, bootinfo->scrnx, COL8_840000, 0, 136,  300,120+32);
+	put_string8(bootinfo->vram, bootinfo->scrnx, COL8_FFFFFF, s, 0, 136);
+	return;
+}
+
 void FIFOBuffer_show(struct FIFOBuffer *fifoBuffer)
 {
     static int count = 0;

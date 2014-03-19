@@ -10,13 +10,14 @@ void HariMain(void)
 {
 
 	struct BOOTINFO *bootinfo = (struct BOOTINFO *)BOOTINFO_ADDR;
-	char s[40], keyBuf[32], mouBuf[128];
+	char s[40], keyBuf[32], mouBuf[128], timerBuf[8];
 	char memTest[40];
 	char mouses[40];
 	int mx, my;
 	int i = 0;
 	unsigned int totalMemory;
 	struct MemoryManager *memoryManager = (struct memoryManager *)MEMMAN_ADDR;
+	struct FIFOBuffer timerFifoBuffer;
 	int mouseCheckerStatus;
 	struct MouseChecker mouseChecker;
 	struct SHTCTL *shtctl;
@@ -33,8 +34,9 @@ void HariMain(void)
 	//设置CPU的开中断，CPU接收中断
 	init_pit();
 	io_out8(PIC0_IMR, 0xf8); 
-	io_out8(PIC1_IMR, 0xef); 
-
+	io_out8(PIC1_IMR, 0xef);
+	FIFOBuffer_Init(&timerFifoBuffer, 8, timerBuf);
+	settimer(300, &timerFifoBuffer, 1); 
 	init_keyboard();
 	enable_mouse();
 
@@ -82,9 +84,8 @@ void HariMain(void)
 		draw_box8(buf_win, 160, COL8_C6C6C6, 20, 28, 119, 43);
 		put_string8(buf_win, 160, COL8_000000, s, 40, 28);
 		sheet_refresh(sht_win, 40, 28, 120, 44);
-//		process_show();
 		io_cli();
-		if (FIFOBuffer_Status(&fifoBuffer) + FIFOBuffer_Status(&mourseFifoBuffer) == 0)
+		if (FIFOBuffer_Status(&fifoBuffer) + FIFOBuffer_Status(&mourseFifoBuffer) + FIFOBuffer_Status(&timerFifoBuffer)== 0)
 		{
 			io_stihlt();
 		}else{
@@ -136,7 +137,11 @@ void HariMain(void)
 					sheet_refresh(sht_back, 12*8+10, 0,  12*8+12*8+10,16);
 					sheet_slide(sht_mouse, mx, my);
 				}		
-
+			}else if(FIFOBuffer_Status(&timerFifoBuffer) != 0){
+				i = FIFOBuffer_Get(&timerFifoBuffer);
+				io_sti();
+				put_string8(buf_back, bootinfo->scrnx, COL8_840000, "10Sec", 0, 80);
+				sheet_refresh(sht_back, 0, 80, 56, 96);
 			}
 		}
 	}
