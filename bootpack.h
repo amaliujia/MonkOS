@@ -267,8 +267,12 @@ struct TimerCTL
 	unsigned int count;
 	//next possible time out timer
 	unsigned int next;
+	//how many timers are active
+	unsigned int active;
 	//timers
 	struct Timer timers[MAX_TIMER];
+	//active timers
+	struct Timer *timersInActive[MAX_TIMER];
 };
 
 void init_pit(void);

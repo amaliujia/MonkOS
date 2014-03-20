@@ -13,6 +13,7 @@ void init_pit(void)
 	int i;
 	timerCTL.count = 0;
 	timerCTL.next = 0xffffffff;
+	timerCTL.active = 0; 
 	for (i = 0; i < MAX_TIMER; ++i)
 	{
 		timerCTL.timers[i].flag = 0; // all unused
@@ -31,7 +32,7 @@ struct Timer* Timer_alloc(void)
 			return &timerCTL.timers[i];
 		}
 	}
-	return NULL;
+	return 0;
 }
 
 void Timer_free(struct Timer *timer)
@@ -56,14 +57,34 @@ done:
 int Timer_SetTimer(struct Timer *timer, unsigned int timeout)
 {
 	int OSError = OS_OK;
+	int i, j, flags;
 	if (timer->flag == TIMER_ALLOC)
 	{
 		timer->timeout = timeout + timerCTL.count;
 		timer->flag = TIMER_RUNNING;
-		if (timerCTL.next > timer->timeout)
+		flags = io_load_eflags();
+		io_cli();
+		//order
+		for(i = 0; i < timerCTL.active; i++)
 		{
-			timerCTL.next = timer->timeout;
+			if (timerCTL.timersInActive[i]->timeout >= timer->timeout)
+			{
+				break;
+			}
 		}
+		//move
+		for(j = timerCTL.active; j > i; j--)
+		{
+			timerCTL.timersInActive[j] = timerCTL.timersInActive[j-1];
+		}
+		timerCTL.active++;
+		timerCTL.timersInActive[i] = timer;
+		timerCTL.next = timerCTL.timersInActive[0]->timeout;
+		io_store_eflags(flags);
+		// if (timerCTL.next > timer->timeout)
+		// {
+		// 	timerCTL.next = timer->timeout;
+		// }
 		goto done;
 	}
 	OSError = OS_TIMER_ALLOC_FAIL;
@@ -73,7 +94,7 @@ done:
 
 void inthandler20(int *esp)
 {
-	int i;
+	int i, j;
 	io_out8(PIC0_OCW2, 0x60); //receive IRQ-00
 	timerCTL.count++;
 	if (timerCTL.next > timerCTL.count)
@@ -81,21 +102,44 @@ void inthandler20(int *esp)
 		//no ome time out
 		goto done;
 	}
-	timerCTL.next = 0xffffffff;
-	for(i = 0; i < MAX_TIMER; i++)
+
+	for (i = 0; i < timerCTL.active; ++i)
 	{
-		if (timerCTL.timers[i].flag == TIMER_RUNNING)
+		if (timerCTL.timersInActive[i]->timeout > timerCTL.count)
 		{
-			if (timerCTL.timers[i].timeout <= timerCTL.count)
-			{
-				timerCTL.timers[i].flag = TIMER_ALLOC;
-				FIFOBuffer_Add(timerCTL.timers[i].fifo, timerCTL.timers[i].data);
-			}else{
-				if(timerCTL.next > timerCTL.timers[i].timeout)
-					timerCTL.next = timerCTL.timers[i].timeout;
-			}
+			break;
 		}
+		timerCTL.timersInActive[i]->flag = TIMER_ALLOC;
+		FIFOBuffer_Add(timerCTL.timersInActive[i]->fifo, timerCTL.timersInActive[i]->data);
 	}
+
+	timerCTL.active -= i;
+
+	for(j = 0; j < timerCTL.active; j++)
+	{
+		timerCTL.timersInActive[j] = timerCTL.timersInActive[j+i];
+	}
+
+	if (timerCTL.active > 0)
+	{
+		timerCTL.next = timerCTL.timersInActive[0]->timeout;
+	}else{
+		timerCTL.next = 0xffffffff;
+	}
+	// for(i = 0; i < MAX_TIMER; i++)
+	// {
+	// 	if (timerCTL.timers[i].flag == TIMER_RUNNING)
+	// 	{
+	// 		if (timerCTL.timers[i].timeout <= timerCTL.count)
+	// 		{
+	// 			timerCTL.timers[i].flag = TIMER_ALLOC;
+	// 			FIFOBuffer_Add(timerCTL.timers[i].fifo, timerCTL.timers[i].data);
+	// 		}else{
+	// 			if(timerCTL.next > timerCTL.timers[i].timeout)
+	// 				timerCTL.next = timerCTL.timers[i].timeout;
+	// 		}
+	// 	}
+	// }
 done:
 	return;
 }
