@@ -10,14 +10,16 @@ void HariMain(void)
 {
 
 	struct BOOTINFO *bootinfo = (struct BOOTINFO *)BOOTINFO_ADDR;
-	char s[40], keyBuf[32], mouBuf[128], timerBuf[8];
+	char s[40], keyBuf[32], mouBuf[128];
 	char memTest[40];
 	char mouses[40];
 	int mx, my;
 	int i = 0;
 	unsigned int totalMemory;
 	struct MemoryManager *memoryManager = (struct memoryManager *)MEMMAN_ADDR;
-	struct FIFOBuffer timerFifoBuffer;
+	struct FIFOBuffer timerfifo1, timerfifo2, timerfifo3;
+	char timerBuf1[8], timerBuf2[8], timerBuf3[8];
+	struct Timer *timer1, *timer2, *timer3;
 	int mouseCheckerStatus;
 	struct MouseChecker mouseChecker;
 	struct SHTCTL *shtctl;
@@ -35,8 +37,19 @@ void HariMain(void)
 	init_pit();
 	io_out8(PIC0_IMR, 0xf8); 
 	io_out8(PIC1_IMR, 0xef);
-	FIFOBuffer_Init(&timerFifoBuffer, 8, timerBuf);
-	settimer(300, &timerFifoBuffer, 1); 
+	FIFOBuffer_Init(&timerfifo1, 8, timerBuf1);
+	timer1 = Timer_alloc();
+	Timer_init(timer1, &timerfifo1, 1);
+	Timer_SetTimer(timer1, 1000);
+	FIFOBuffer_Init(&timerfifo2, 8, timerBuf2);
+	timer2 = Timer_alloc();
+	Timer_init(timer2, &timerfifo2, 2);
+	Timer_SetTimer(timer2, 300);
+	FIFOBuffer_Init(&timerfifo3, 8, timerBuf3);
+ 	timer3 = Timer_alloc();
+ 	Timer_init(timer3, &timerfifo3, 3);
+ 	Timer_SetTimer(timer3, 50);
+
 	init_keyboard();
 	enable_mouse();
 
@@ -48,7 +61,6 @@ void HariMain(void)
 	sprintf(memtest, "%dMB, %dKB", totalMemory/(1024*1024), MemoryManagement_current_free(memoryManager)/1024);
 	 
 	// layer hierarchy
-//draw_cursor(bootinfo->vram, bootinfo->scrnx, 16, 16 , mx, my, cursorBuf, 16);
 	init_color();
 	shtctl = shtctl_init(memoryManager, bootinfo->vram, bootinfo->scrnx, bootinfo->scrny);
 	sht_back = sheet_alloc(shtctl);
@@ -62,8 +74,6 @@ void HariMain(void)
 	init_screen(buf_back, bootinfo->scrnx, bootinfo->scrny);
 	init_mouse_cursor8(buf_mouse, 99);
 	sheet_window(buf_win, 160, 68, "Counter");
-//	put_string8(buf_win, 160, COL8_000000, "Welcome to", 24, 28);
-//	put_string8(buf_win, 160, COL8_000000, "  Monk-OS", 24, 44);
 	sheet_slide(sht_back, 0, 0);
 	mx = (bootinfo->scrnx - 16) / 2;
 	my = (bootinfo->scrny - 16) / 2;
@@ -85,7 +95,7 @@ void HariMain(void)
 		put_string8(buf_win, 160, COL8_000000, s, 40, 28);
 		sheet_refresh(sht_win, 40, 28, 120, 44);
 		io_cli();
-		if (FIFOBuffer_Status(&fifoBuffer) + FIFOBuffer_Status(&mourseFifoBuffer) + FIFOBuffer_Status(&timerFifoBuffer)== 0)
+		if (FIFOBuffer_Status(&fifoBuffer) + FIFOBuffer_Status(&mourseFifoBuffer) + FIFOBuffer_Status(&timerfifo1) + FIFOBuffer_Status(&timerfifo2) + FIFOBuffer_Status(&timerfifo3) == 0)
 		{
 			io_stihlt();
 		}else{
@@ -137,11 +147,21 @@ void HariMain(void)
 					sheet_refresh(sht_back, 12*8+10, 0,  12*8+12*8+10,16);
 					sheet_slide(sht_mouse, mx, my);
 				}		
-			}else if(FIFOBuffer_Status(&timerFifoBuffer) != 0){
-				i = FIFOBuffer_Get(&timerFifoBuffer);
+			}else if(FIFOBuffer_Status(&timerfifo1) != 0){
+				i = FIFOBuffer_Get(&timerBuf1);
 				io_sti();
 				put_string8(buf_back, bootinfo->scrnx, COL8_840000, "10Sec", 0, 80);
 				sheet_refresh(sht_back, 0, 80, 56, 96);
+			}else if(FIFOBuffer_Status(&timerfifo2) != 0){
+				i = FIFOBuffer_Get(&timerBuf2);
+				io_sti();
+				put_string8(buf_back, bootinfo->scrnx, COL8_840000, "3Sec", 0, 96);
+				sheet_refresh(sht_back, 0, 96, 56, 112);
+			}else if(FIFOBuffer_Status(&timerfifo3) != 0){
+				i = FIFOBuffer_Get(&timerBuf3);
+				io_sti();
+				put_string8(buf_back, bootinfo->scrnx, COL8_840000, "0.5Sec", 0, 112);
+				sheet_refresh(sht_back, 0, 112, 56, 128);
 			}
 		}
 	}

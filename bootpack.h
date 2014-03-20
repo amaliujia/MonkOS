@@ -1,4 +1,12 @@
 #include <stdio.h>
+
+/*
+	Error definition
+*/
+#define OS_OK 						0;
+#define OS_TIMER_ALLOC_FAIL			1;
+
+
 //fundamental functions 
 void io_hlt(void);
 void write_mem8(int addr, int data);
@@ -239,15 +247,33 @@ void sheet_window(unsigned char *buf, int xsize, int ysize, char *title);
 /*
 	timer
 */
-struct TimerCTL
+#define PIT_CTRL	0x0043
+#define PIT_CNT0	0x0040
+#define MAX_TIMER 500
+
+struct Timer
 {
-	unsigned int count;
-	//记录离超时还有多少时间
 	unsigned int timeout;
-	//the fifo to record timeout flag
+	//record state of this timer
+	unsigned int flag;
+	//记录离超时还有多少时间
 	struct FIFOBuffer *fifo;
 	unsigned char data;
 };
 
+struct TimerCTL
+{
+	//开机计时
+	unsigned int count;
+	//timers
+	struct Timer timers[MAX_TIMER];
+};
+
 void init_pit(void);
-void settimer(unsigned int timeout, struct FIFOBuffer *fifo, unsigned char data);
+struct Timer* Timer_alloc(void);
+void Timer_free(struct Timer *timer);
+int Timer_init(struct Timer *timer, struct FIFOBuffer *fifo, unsigned char data);
+int Timer_SetTimer(struct Timer *timer, unsigned int timeout);
+
+//old version of settimer func
+//void settimer(unsigned int timeout, struct FIFOBuffer *fifo, unsigned char data);
