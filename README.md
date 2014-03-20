@@ -28,7 +28,9 @@ memory management
 
 multi-windows and layer hierarchy
 
-timer
+multi-timer
+
+timer controller
 
 Copyright
 =======
