@@ -265,6 +265,8 @@ struct TimerCTL
 {
 	//开机计时
 	unsigned int count;
+	//next possible time out timer
+	unsigned int next;
 	//timers
 	struct Timer timers[MAX_TIMER];
 };
