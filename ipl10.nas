@@ -36,7 +36,7 @@ entry:
 		MOV		SP,0x7c00		;从0x7c00开始执行
 		MOV		DS,AX
 
-; ƒfƒBƒXƒN‚ð“Ç‚Þ
+;
 
 		MOV		AX,0x0820		;set memeory address 0x0820
 								;os body will be saved from ;this address
