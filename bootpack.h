@@ -166,6 +166,7 @@ struct FIFOBuffer
 	unsigned char *buf;
 	int start, end, size, space, flags;
 };
+
 // UIOBuffer init func
 void FIFOBuffer_Init(struct FIFOBuffer *fifoBuffer, int size, unsigned char *buf);
 //UIOBuffer add func
@@ -212,12 +213,6 @@ int MemoryManagement_free(struct MemoryManager *memManager, unsigned int address
 unsigned int MemoryManagement_current_free(struct MemoryManager *memManager);
 unsigned int MemoryManagement_alloc_page(struct MemoryManager *memManager, unsigned int size);
 int MemoryManagement_free_page(struct MemoryManager *memManager, unsigned int address, unsigned int size);
-/*
-Debug func
-*/
-void process_show();
-void process_show_buddy();
-void FIFOBuffer_show(struct FIFOBuffer *fifoBuffer);
 
 
 // screen layers
@@ -241,8 +236,11 @@ void sheet_refresh(struct SHEET *sht, int bx0, int by0, int bx1, int by1);
 void sheet_slide(struct SHEET *sht, int vx0, int vy0);
 void sheet_free(struct SHEET *sht);
 void sheet_refreshsub(struct SHTCTL *ctl, int vx0, int vy0, int vx1, int vy1, int h0);
-
+void sheet_error(unsigned char *buf, int xsize, int ysize);
 void sheet_window(unsigned char *buf, int xsize, int ysize, char *title);
+
+//a package contains drawing background, drawing string, layer refreshment
+void put_string_package(struct SHEET *sheet, int x, int y, int wordColor, int backgroundColor, char *string, int length);
 
 /*
 	timer
@@ -258,7 +256,7 @@ struct Timer
 	unsigned int flag;
 	//记录离超时还有多少时间
 	struct FIFOBuffer *fifo;
-	unsigned char data;
+	int data;
 };
 
 struct TimerCTL
@@ -275,6 +273,18 @@ struct TimerCTL
 	struct Timer *timersInActive[MAX_TIMER];
 };
 
+// struct FIFOBufferInteger
+// {
+// 	int *buf;
+// 	int start, end, size, space, flags;
+// };
+// //UIOBuffer add 32bits func
+// void FIFOBuffer_Init_Integer(struct FIFOBufferInteger *fifoBuffer, int size, int *buf);
+// int FIFOBuffer_ADD_Integer(struct FIFOBufferInteger *fifoBuffer, int data);
+// int FIFOBuffer_Get_Integer(struct FIFOBufferInteger *fifoBuffer);
+// int FIFOBuffer_Status_Integer(struct FIFOBufferInteger *fifoBuffer);
+
+
 void init_pit(void);
 struct Timer* Timer_alloc(void);
 void Timer_free(struct Timer *timer);
@@ -283,3 +293,12 @@ int Timer_SetTimer(struct Timer *timer, unsigned int timeout);
 
 //old version of settimer func
 //void settimer(unsigned int timeout, struct FIFOBuffer *fifo, unsigned char data);
+
+
+/*
+Debug func
+*/
+void process_show();
+void process_show_buddy();
+void FIFOBuffer_show(struct FIFOBuffer *fifoBuffer);
+void process_show_string(struct SHEET *sheet, char *string);

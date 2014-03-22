@@ -4,6 +4,7 @@
 #define TIMER_RUNNING 2
 
 struct TimerCTL timerCTL;
+extern struct SHEET *sht_back;
 
 void init_pit(void)
 {
@@ -43,23 +44,23 @@ void Timer_free(struct Timer *timer)
 
 int Timer_init(struct Timer *timer, struct FIFOBuffer *fifo, unsigned char data)
 {
-	int OSError = OS_OK;
-	if(timer->flag != 0){
+//	int OSError = OS_OK;
+//	if(timer->flag != 0){
 		timer->fifo = fifo;
 		timer->data = data;
-		goto done;
-	}
-	OSError = OS_TIMER_ALLOC_FAIL;
-done:
-	return OSError;
+//		goto done;
+//	}
+//	OSError = OS_TIMER_ALLOC_FAIL;
+//done:
+	return 0;
 }
 
 int Timer_SetTimer(struct Timer *timer, unsigned int timeout)
 {
-	int OSError = OS_OK;
+//	int OSError = OS_OK;
 	int i, j, flags;
-	if (timer->flag == TIMER_ALLOC)
-	{
+//	if (timer->flag == TIMER_ALLOC)
+//	{
 		timer->timeout = timeout + timerCTL.count;
 		timer->flag = TIMER_RUNNING;
 		flags = io_load_eflags();
@@ -85,11 +86,11 @@ int Timer_SetTimer(struct Timer *timer, unsigned int timeout)
 		// {
 		// 	timerCTL.next = timer->timeout;
 		// }
-		goto done;
-	}
-	OSError = OS_TIMER_ALLOC_FAIL;
-done:
-	return OSError;
+//		goto done;
+//	}
+//	OSError = OS_TIMER_ALLOC_FAIL;
+//done:
+	return 0;
 }
 
 void inthandler20(int *esp)
@@ -110,6 +111,7 @@ void inthandler20(int *esp)
 			break;
 		}
 		timerCTL.timersInActive[i]->flag = TIMER_ALLOC;
+		//process_show();
 		FIFOBuffer_Add(timerCTL.timersInActive[i]->fifo, timerCTL.timersInActive[i]->data);
 	}
 
@@ -140,6 +142,7 @@ void inthandler20(int *esp)
 	// 		}
 	// 	}
 	// }
+	//process_show();
 done:
 	return;
 }

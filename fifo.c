@@ -1,6 +1,7 @@
 #include "bootpack.h"
 
 #define FLAGS_OVERRUN	0x0001
+//extern struct SHEET *sht_error;
 
 void FIFOBuffer_Init(struct FIFOBuffer *fifoBuffer, int size, unsigned char *buf)
 {
@@ -20,12 +21,14 @@ int FIFOBuffer_Add(struct FIFOBuffer *fifoBuffer, unsigned char data)
 		return -1;
 	}
 	fifoBuffer->buf[fifoBuffer->end] = data;
+
 	fifoBuffer->end++;
 	if (fifoBuffer->end == fifoBuffer->size)
 	{
 		fifoBuffer->end = 0;
 	}
-	fifoBuffer->space--;
+	 fifoBuffer->space--;
+
 	return 0;
 }
 
@@ -34,6 +37,7 @@ int FIFOBuffer_Get(struct FIFOBuffer *fifoBuffer)
 	int data;
 	if(fifoBuffer->space == fifoBuffer->size)
 	{
+
 		return -1;
 	}
 	

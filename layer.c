@@ -193,6 +193,10 @@ void sheet_free(struct SHEET *sht)
 	sht->flags = 0; // mark as unused layer
 }
 
+void sheet_error(unsigned char *buf, int xsize, int ysize)
+{
+	draw_box8(buf, xsize, COL8_008484,  0,         0,          xsize -  1, ysize);
+}
 void sheet_window(unsigned char *buf, int xsize, int ysize, char *title)
 {
 	static char closebtn[14][16] = {

@@ -153,3 +153,10 @@ void draw_cursor(char *vram, int xsize, int cursorXSize, int cursorYSize, int st
 	}
 	return;
 }
+
+void put_string_package(struct SHEET *sheet, int x, int y, int wordColor, int backgroundColor, char *string, int length)
+{
+	draw_box8(sheet->buf, sheet->bxsize, backgroundColor, x, y, x+length*8-1, y+15);
+	put_string8(sheet->buf, sheet->bxsize, wordColor, string, x, y);
+	sheet_refresh(sheet, x, y, x+length*8, y+16);
+}

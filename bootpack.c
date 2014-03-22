@@ -5,7 +5,7 @@
 extern struct FIFOBuffer fifoBuffer;
 extern struct FIFOBuffer mourseFifoBuffer;
 extern struct TimerCTL timerCTL;
-
+//struct SHEET *sht_error;
 void HariMain(void)
 {
 
@@ -17,15 +17,14 @@ void HariMain(void)
 	int i = 0;
 	unsigned int totalMemory;
 	struct MemoryManager *memoryManager = (struct memoryManager *)MEMMAN_ADDR;
-	struct FIFOBuffer timerfifo1, timerfifo2, timerfifo3;
-	char timerBuf1[8], timerBuf2[8], timerBuf3[8];
+	struct FIFOBuffer timerfifo, timerfifo2, timerfifo3;
+	char timerBuf[8];
 	struct Timer *timer1, *timer2, *timer3;
 	int mouseCheckerStatus;
 	struct MouseChecker mouseChecker;
 	struct SHTCTL *shtctl;
 	struct SHEET *sht_back, *sht_mouse, *sht_win;
 	unsigned char *buf_back, buf_mouse[256], *buf_win;	
-
 
 	init_MouseChecker(&mouseChecker);
 	init_gdtidt();
@@ -37,17 +36,17 @@ void HariMain(void)
 	init_pit();
 	io_out8(PIC0_IMR, 0xf8); 
 	io_out8(PIC1_IMR, 0xef);
-	FIFOBuffer_Init(&timerfifo1, 8, timerBuf1);
+	FIFOBuffer_Init(&timerfifo, 8, timerBuf);
 	timer1 = Timer_alloc();
-	Timer_init(timer1, &timerfifo1, 1);
+	Timer_init(timer1, &timerfifo, 10);
 	Timer_SetTimer(timer1, 1000);
-	FIFOBuffer_Init(&timerfifo2, 8, timerBuf2);
+//	FIFOBuffer_Init(&timerfifo2, 16, timerBuf2);
 	timer2 = Timer_alloc();
-	Timer_init(timer2, &timerfifo2, 2);
+	Timer_init(timer2, &timerfifo, 3);
 	Timer_SetTimer(timer2, 300);
-	FIFOBuffer_Init(&timerfifo3, 8, timerBuf3);
+	//FIFOBuffer_Init(&timerfifo3, 8, timerBuf3);
  	timer3 = Timer_alloc();
- 	Timer_init(timer3, &timerfifo3, 3);
+ 	Timer_init(timer3, &timerfifo, 1);
  	Timer_SetTimer(timer3, 50);
 
 	init_keyboard();
@@ -66,14 +65,18 @@ void HariMain(void)
 	sht_back = sheet_alloc(shtctl);
 	sht_mouse = sheet_alloc(shtctl);
 	sht_win = sheet_alloc(shtctl);
+//	sht_error = sheet_alloc(shtctl);
 	buf_back = (unsigned char *)MemoryManagement_alloc_page(memoryManager, bootinfo->scrnx * bootinfo->scrny);
+//	buf_error = (unsigned char *)MemoryManagement_alloc_page(memoryManager, bootinfo->scrnx * bootinfo->scrny);
 	buf_win = (unsigned char *)MemoryManagement_alloc_page(memoryManager, 160 * 68);
 	sheet_setbuf(sht_back, buf_back, bootinfo->scrnx, bootinfo->scrny, -1);
 	sheet_setbuf(sht_mouse, buf_mouse, 16, 16, 99);
 	sheet_setbuf(sht_win, buf_win, 160, 68, -1);
+//	sheet_setbuf(sht_error, buf_error, bootinfo->scrnx, bootinfo->scrny, -1);
 	init_screen(buf_back, bootinfo->scrnx, bootinfo->scrny);
 	init_mouse_cursor8(buf_mouse, 99);
 	sheet_window(buf_win, 160, 68, "Counter");
+	//sheet_error(buf_error, bootinfo->scrnx, bootinfo->scrny);
 	sheet_slide(sht_back, 0, 0);
 	mx = (bootinfo->scrnx - 16) / 2;
 	my = (bootinfo->scrny - 16) / 2;
@@ -82,6 +85,7 @@ void HariMain(void)
 	sheet_updown(sht_back, 0);
 	sheet_updown(sht_mouse, 2);
 	sheet_updown(sht_win, 1);
+	//sheet_updown(sht_error, 1);
 	sprintf(s, "(%3d, %3d)", mx, my);
 	put_string8(buf_back, bootinfo->scrnx, COL8_FFFFFF, s, 0, 0);
 	sheet_refresh(sht_back, 0, 0, bootinfo->scrnx, 48);
@@ -95,7 +99,7 @@ void HariMain(void)
 		put_string8(buf_win, 160, COL8_000000, s, 40, 28);
 		sheet_refresh(sht_win, 40, 28, 120, 44);
 		io_cli();
-		if (FIFOBuffer_Status(&fifoBuffer) + FIFOBuffer_Status(&mourseFifoBuffer) + FIFOBuffer_Status(&timerfifo1) + FIFOBuffer_Status(&timerfifo2) + FIFOBuffer_Status(&timerfifo3) == 0)
+		if (FIFOBuffer_Status(&fifoBuffer) + FIFOBuffer_Status(&mourseFifoBuffer) + FIFOBuffer_Status(&timerfifo) == 0)
 		{
 			io_stihlt();
 		}else{
@@ -107,6 +111,7 @@ void HariMain(void)
 				put_string8(buf_back, bootinfo->scrnx, COL8_FFFFFF, s, 0, 0);
 				sheet_refresh(sht_back, 0, 0,  12*8,16);
 			}else if(FIFOBuffer_Status(&mourseFifoBuffer) != 0){
+				//process_show();
 				i = FIFOBuffer_Get(&mourseFifoBuffer);
 				io_sti();
 				mouseCheckerStatus = MouseChecker_Job(&mouseChecker, i);
@@ -147,21 +152,19 @@ void HariMain(void)
 					sheet_refresh(sht_back, 12*8+10, 0,  12*8+12*8+10,16);
 					sheet_slide(sht_mouse, mx, my);
 				}		
-			}else if(FIFOBuffer_Status(&timerfifo1) != 0){
-				i = FIFOBuffer_Get(&timerBuf1);
+			}else if(FIFOBuffer_Status(&timerfifo) != 0){
+				i = FIFOBuffer_Get(&timerfifo);
 				io_sti();
+				if(i == 10){
 				put_string8(buf_back, bootinfo->scrnx, COL8_840000, "10Sec", 0, 80);
 				sheet_refresh(sht_back, 0, 80, 56, 96);
-			}else if(FIFOBuffer_Status(&timerfifo2) != 0){
-				i = FIFOBuffer_Get(&timerBuf2);
-				io_sti();
+				}else if(i == 3){
 				put_string8(buf_back, bootinfo->scrnx, COL8_840000, "3Sec", 0, 96);
 				sheet_refresh(sht_back, 0, 96, 56, 112);
-			}else if(FIFOBuffer_Status(&timerfifo3) != 0){
-				i = FIFOBuffer_Get(&timerBuf3);
-				io_sti();
+				}else if(i == 1){
 				put_string8(buf_back, bootinfo->scrnx, COL8_840000, "0.5Sec", 0, 112);
 				sheet_refresh(sht_back, 0, 112, 56, 128);
+				}	
 			}
 		}
 	}

@@ -22,6 +22,11 @@ void process_show_buddy()
 	return;
 }
 
+void process_show_string(struct SHEET *sheet, char *string)
+{
+	put_string_package(sheet, 0, 120, COL8_FFFFFF, COL8_840000, string, 20);
+}
+
 void FIFOBuffer_show(struct FIFOBuffer *fifoBuffer)
 {
     static int count = 0;
