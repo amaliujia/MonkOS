@@ -1,5 +1,13 @@
 ; haribote-os boot asm
 ; TAB=4
+[INSTRSET "i486p"]	
+
+VBEMODE	EQU		0x105			; 1024 x  768 x 8bit
+;	0x100 :  640 x  400 x 8bit
+;	0x101 :  640 x  480 x 8bit
+;	0x103 :  800 x  600 x 8bit
+;	0x105 : 1024 x  768 x 8bit
+;	0x107 : 1280 x 1024 x 8bit
 
 BOTPAK	EQU		0x00280000		
 DSKCAC	EQU		0x00100000		
@@ -14,17 +22,58 @@ SCRNY	EQU		0x0ff6			;screen y
 VRAM	EQU		0x0ff8			;显存地址
 
 		ORG	0xc200				;load code on 0xc200
-	
-		MOV AL,0x13				;VGA initialization
-								;320*200*8
-		MOV AH,0x00
-		INT 0x10
-		MOV BYTE[VMODE],8
-		MOV WORD[SCRNX],320
-		MOV WORD[SCRNY],200
-		MOV DWORD[VRAM],0x000a0000
+
+; VBE640*480*8bi 		
+		MOV		AX,0x9000
+		MOV		ES,AX
+		MOV		DI,0
+		MOV		AX,0x4f00
+		INT		0x10
+		CMP		AX,0x004f
+		JNE		scrn320
+
+		MOV		AX,[ES:DI+4]
+		CMP		AX,0x0200
+		JB		scrn320			; if (AX < 0x0200) goto scrn320
+
+		MOV		CX,VBEMODE
+		MOV		AX,0x4f01
+		INT		0x10
+		CMP		AX,0x004f
+		JNE		scrn320
+
+		CMP		BYTE [ES:DI+0x19],8
+		JNE		scrn320
+		CMP		BYTE [ES:DI+0x1b],4
+		JNE		scrn320
+		MOV		AX,[ES:DI+0x00]
+		AND		AX,0x0080
+		JZ		scrn320	
+
+		MOV		BX,VBEMODE+0x4000
+		MOV		AX,0x4f02
+		INT		0x10
+		MOV		BYTE [VMODE],8	; ‰æ–Êƒ‚[ƒh‚ðƒƒ‚‚·‚éiCŒ¾Œê‚ªŽQÆ‚·‚éj
+		MOV		AX,[ES:DI+0x12]
+		MOV		[SCRNX],AX
+		MOV		AX,[ES:DI+0x14]
+		MOV		[SCRNY],AX
+		MOV		EAX,[ES:DI+0x28]
+		MOV		[VRAM],EAX
+		JMP		keystatus
+
+
+scrn320:
+		MOV		AL,0x13			
+		MOV		AH,0x00
+		INT		0x10
+		MOV		BYTE [VMODE],8	
+		MOV		WORD [SCRNX],320
+		MOV		WORD [SCRNY],200
+		MOV		DWORD [VRAM],0x000a0000
 
 ;BIOS and keyboard
+keystatus:
 		MOV	AH,0x02
 		INT 0x16		;keyboard BIOS
 		MOV [LEDS],AL
@@ -59,7 +108,7 @@ VRAM	EQU		0x0ff8			;显存地址
 ;In protected mode, memory address can be gotten by segment descriptor.
 
 ;以下是切换到保护模式
-[INSTRSET "i486p"]				
+			
 		LGDT	[GDTR0]			
 		MOV		EAX,CR0
 		AND		EAX,0x7fffffff	
