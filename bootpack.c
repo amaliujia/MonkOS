@@ -110,8 +110,12 @@ void HariMain(void)
 				draw_box8(buf_back, bootinfo->scrnx, COL8_008484, 0, 0,  12*8,16);
 				put_string8(buf_back, bootinfo->scrnx, COL8_FFFFFF, s, 0, 0);
 				sheet_refresh(sht_back, 0, 0,  12*8,16);
-				if(i == 0x1e){
-					put_string_package(sht_win, 40, 28, COL8_000000, COL8_C6C6C6, "A", 1);
+				if(i < 0x54){
+					if(chartable[i] != 0){
+						s[0] = chartable[i];
+						s[1] = 0;
+						put_string_package(sht_win, 40, 28, COL8_000000, COL8_C6C6C6, s, 1);
+					}
 				}
 			}else if(FIFOBuffer_Status(&mourseFifoBuffer) != 0){
 				//process_show();
