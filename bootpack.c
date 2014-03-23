@@ -75,7 +75,7 @@ void HariMain(void)
 //	sheet_setbuf(sht_error, buf_error, bootinfo->scrnx, bootinfo->scrny, -1);
 	init_screen(buf_back, bootinfo->scrnx, bootinfo->scrny);
 	init_mouse_cursor8(buf_mouse, 99);
-	sheet_window(buf_win, 160, 68, "Counter");
+	sheet_window(buf_win, 160, 68, "window");
 	//sheet_error(buf_error, bootinfo->scrnx, bootinfo->scrny);
 	sheet_slide(sht_back, 0, 0);
 	mx = (bootinfo->scrnx - 16) / 2;
@@ -92,12 +92,12 @@ void HariMain(void)
 
 	put_string8(buf_back, bootinfo->scrnx, COL8_FFFFFF, memtest, 0, 60);
 	sheet_refresh(sht_back, 0, 60, 40*16, 76);
+	//	sprintf(s, "%010d", timerCTL.count);
+	draw_box8(buf_win, 160, COL8_C6C6C6, 20, 28, 119, 43);
+	// put_string8(buf_win, 160, COL8_000000, "hehe", 40, 28);
+	// sheet_refresh(sht_win, 40, 28, 120, 44);
 	for (;;)
 	{
-		sprintf(s, "%010d", timerCTL.count);
-		draw_box8(buf_win, 160, COL8_C6C6C6, 20, 28, 119, 43);
-		put_string8(buf_win, 160, COL8_000000, s, 40, 28);
-		sheet_refresh(sht_win, 40, 28, 120, 44);
 		io_cli();
 		if (FIFOBuffer_Status(&fifoBuffer) + FIFOBuffer_Status(&mourseFifoBuffer) + FIFOBuffer_Status(&timerfifo) == 0)
 		{
@@ -110,6 +110,9 @@ void HariMain(void)
 				draw_box8(buf_back, bootinfo->scrnx, COL8_008484, 0, 0,  12*8,16);
 				put_string8(buf_back, bootinfo->scrnx, COL8_FFFFFF, s, 0, 0);
 				sheet_refresh(sht_back, 0, 0,  12*8,16);
+				if(i == 0x1e){
+					put_string_package(sht_win, 40, 28, COL8_000000, COL8_C6C6C6, "A", 1);
+				}
 			}else if(FIFOBuffer_Status(&mourseFifoBuffer) != 0){
 				//process_show();
 				i = FIFOBuffer_Get(&mourseFifoBuffer);
@@ -142,10 +145,10 @@ void HariMain(void)
 					if(my > bootinfo->scrny - 1)
 						my = bootinfo->scrny - 1;
 
-					sprintf(s, "(%3d, %3d)", mx, my);
-					draw_box8(buf_back, bootinfo->scrnx, COL8_008484, 0, 0,12*8+12*8,16);
-					put_string8(buf_back, bootinfo->scrnx, COL8_FFFFFF, s, 0, 0);
-					sheet_refresh(sht_back, 0, 0, bootinfo->scrnx, 48);				
+					// sprintf(s, "(%3d, %3d)", mx, my);
+					// draw_box8(buf_back, bootinfo->scrnx, COL8_008484, 0, 0,12*8+12*8,16);
+					// put_string8(buf_back, bootinfo->scrnx, COL8_FFFFFF, s, 0, 0);
+					// sheet_refresh(sht_back, 0, 0, bootinfo->scrnx, 48);				
 					sprintf(mouses, "x=%d y=%d",mx, my);
 					draw_box8(buf_back, bootinfo->scrnx, COL8_008484, 12*8+10, 0,  12*8+12*8+10,16);
 					put_string8(buf_back, bootinfo->scrnx, COL8_FFFFFF, mouses, 12*8+10, 0);
