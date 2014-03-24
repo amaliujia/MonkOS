@@ -209,7 +209,7 @@ void HariMain(void)
 				}else if(i == 3){
 				put_string8(buf_back, bootinfo->scrnx, COL8_840000, "3Sec", 0, 96);
 				sheet_refresh(sht_back, 0, 96, 56, 112);
-				ProcessSwitch();
+				ProcessSwitch(0, 4*8);
 				}else if(i == 1){
 				put_string8(buf_back, bootinfo->scrnx, COL8_840000, "0.5Sec", 0, 112);
 				sheet_refresh(sht_back, 0, 112, 56, 128);
@@ -222,7 +222,7 @@ void HariMain(void)
 
 void task_b_main(void)
 {
-	process_show();
+	//process_show();
 	for (;;) 
 	{ 
 		io_hlt(); 

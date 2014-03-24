@@ -314,7 +314,7 @@ struct TaskStatusSegment
 	int ldtr, iomap; 
 };
 void load_tr(int tr);
-void ProcessSwitch();
+void ProcessSwitch(int eip, int cs);
 /*
 Debug func
 */

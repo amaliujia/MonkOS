@@ -233,6 +233,6 @@ _load_tr:	; void load_tr(int tr)
 		LTR 	[ESP+4]		;load to TR Register
 		RET
 
-_ProcessSwitch:	; void ProcessSwitch(int num)
-		JMP		4*8:0
+_ProcessSwitch:	; void ProcessSwitch(int eip, int cs)
+		JMP		FAR [ESP+4]
 		RET
