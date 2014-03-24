@@ -246,7 +246,7 @@ void sheet_free(struct SHEET *sht);
 void sheet_refreshsub(struct SHTCTL *ctl, int vx0, int vy0, int vx1, int vy1, int h0);
 void sheet_error(unsigned char *buf, int xsize, int ysize);
 void sheet_window(unsigned char *buf, int xsize, int ysize, char *title);
-
+void make_textbox(struct SHEET *sht, int x0, int y0, int sx, int sy, int c);
 //a package contains drawing background, drawing string, layer refreshment
 void put_string_package(struct SHEET *sheet, int x, int y, int wordColor, int backgroundColor, char *string, int length);
 
