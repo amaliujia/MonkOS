@@ -18,6 +18,7 @@ void init_gdtidt()
 	set_segmdesc(gdt+1, 0xffffffff, 0x00000000, AR_DATA32_RW);
 	//seg2是512KB, 基址是0x280000，从来存bootpack.hrb
 	set_segmdesc(gdt+2, LIMIT_BOTPAK, ADR_BOTPAK, AR_CODE32_ER);
+	//
 	//operator GDTR register
 	load_gdtr(LIMIT_GDT, ADR_GDT);
 

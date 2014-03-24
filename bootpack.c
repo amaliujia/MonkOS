@@ -15,7 +15,7 @@ void HariMain(void)
 	char mouses[40];
 	int mx, my;
 	int i = 0;
-	int cursor_location, cursor_color;
+	int cursor_location, cursor_color, task_b_esp;
 	unsigned int totalMemory;
 	struct MemoryManager *memoryManager = (struct memoryManager *)MEMMAN_ADDR;
 	struct FIFOBuffer timerfifo, timerfifo2, timerfifo3;
@@ -25,7 +25,9 @@ void HariMain(void)
 	struct MouseChecker mouseChecker;
 	struct SHTCTL *shtctl;
 	struct SHEET *sht_back, *sht_mouse, *sht_win;
-	unsigned char *buf_back, buf_mouse[256], *buf_win;	
+	unsigned char *buf_back, buf_mouse[256], *buf_win;
+	struct TaskStatusSegment tss_a, tss_b;
+	struct SEGMENT_DESCRIPTOR *gdt = (struct SEGMENT_DESCRIPTOR *)ADR_GDT;
 
 	init_MouseChecker(&mouseChecker);
 	init_gdtidt();
@@ -55,6 +57,7 @@ void HariMain(void)
  	Timer_SetTimer(timer3, 50);
 
 	// 初始化内存管理
+	//tss_a 也就是本文件的程序的段状态 
     totalMemory = memtest(0x00400000, 0xbfffffff);
 	MemoryManagement_init(memoryManager);
 	MemoryManagement_free(memoryManager, 0x00001000, 0x0009e000);/* free 0x00001000 - 0x0009efff */
@@ -94,14 +97,34 @@ void HariMain(void)
 	sprintf(s, "(%3d, %3d)", mx, my);
 	put_string8(buf_back, bootinfo->scrnx, COL8_FFFFFF, s, 0, 0);
 	sheet_refresh(sht_back, 0, 0, bootinfo->scrnx, 48);
-
 	put_string8(buf_back, bootinfo->scrnx, COL8_FFFFFF, memtest, 0, 44);
 	sheet_refresh(sht_back, 0, 44, 40*16, 60);
-	//	sprintf(s, "%010d", timerCTL.count);
-	//draw_box8(sht_win->buf, 160, COL8_C6C6C6, 5, 28, 119, 43);
 
-	// put_string8(buf_win, 160, COL8_000000, "hehe", 40, 28);
-	// sheet_refresh(sht_win, 40, 28, 120, 44);
+	tss_a.ldtr = 0;
+	tss_a.iomap = 0x40000000;
+	tss_b.ldtr = 0;
+	tss_b.iomap = 0x40000000;
+	set_segmdesc(gdt+3, 103, (int)&tss_a, AR_TSS32);
+	set_segmdesc(gdt+4, 103, (int)&tss_b, AR_TSS32);
+	load_tr(3*8);
+	task_b_esp = MemoryManagement_alloc_page(memoryManager, 64 * 1024) + 64 * 1024;
+	tss_b.eip = (int)&task_b_main;
+	tss_b.eflags = 0x00000202; // IF=1
+	tss_b.eax = 0;
+	tss_b.eax = 0;
+	tss_b.ecx = 0;
+	tss_b.edx = 0;
+	tss_b.ebx = 0;
+	tss_b.esp = task_b_esp;
+	tss_b.ebp = 0;
+	tss_b.esi = 0;
+	tss_b.edi = 0;
+	tss_b.es = 1 * 8;
+	tss_b.cs = 2 * 8;
+	tss_b.ss = 1 * 8;
+	tss_b.ds = 1 * 8;
+	tss_b.fs = 1 * 8;
+	tss_b.gs = 1 * 8;
 	for (;;)
 	{
 		io_cli();
@@ -186,11 +209,22 @@ void HariMain(void)
 				}else if(i == 3){
 				put_string8(buf_back, bootinfo->scrnx, COL8_840000, "3Sec", 0, 96);
 				sheet_refresh(sht_back, 0, 96, 56, 112);
+				ProcessSwitch();
 				}else if(i == 1){
 				put_string8(buf_back, bootinfo->scrnx, COL8_840000, "0.5Sec", 0, 112);
 				sheet_refresh(sht_back, 0, 112, 56, 128);
 				}	
 			}
 		}
+	}
+}
+
+
+void task_b_main(void)
+{
+	process_show();
+	for (;;) 
+	{ 
+		io_hlt(); 
 	}
 }

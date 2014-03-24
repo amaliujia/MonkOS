@@ -104,6 +104,7 @@ void set_segmdesc(struct SEGMENT_DESCRIPTOR *sd, unsigned int limit, int base, i
 #define AR_DATA32_RW	0x4092
 #define AR_CODE32_ER	0x409a
 #define AR_INTGATE32	0x008e
+#define AR_TSS32		0x0089
 
 //IDT descriptor structure
 struct GATE_DESCRIPTOR
@@ -302,7 +303,18 @@ int Timer_SetTimer(struct Timer *timer, unsigned int timeout);
 //old version of settimer func
 //void settimer(unsigned int timeout, struct FIFOBuffer *fifo, unsigned char data);
 
-
+/*
+multi-processes
+*/
+struct TaskStatusSegment
+{
+	int backlink, esp0, ss0, esp1, ss1, esp2, ss2, cr3;
+	int eip, eflags, eax, ebx, ecx, edx, esp, ebp, esi, edi;
+	int es, cs, ss, ds, fs, gs;
+	int ldtr, iomap; 
+};
+void load_tr(int tr);
+void ProcessSwitch();
 /*
 Debug func
 */
@@ -310,3 +322,6 @@ void process_show();
 void process_show_buddy();
 void FIFOBuffer_show(struct FIFOBuffer *fifoBuffer);
 void process_show_string(struct SHEET *sheet, char *string);
+
+
+void task_b_main(void);

@@ -36,6 +36,8 @@
 	    GLOBAL  _asm_inthandler20 ;timer interrupt handler
 	    GLOBAL	_memtest_sub
 	    EXTERN _inthandler21, _inthandler2c, _inthandler27, _inthandler20
+	    GLOBAL _load_tr
+	    GLOBAL _ProcessSwitch 
 
 [SECTION .text]				;imply real part of func
 _io_hlt:					;void io_hlt(void);
@@ -226,3 +228,11 @@ _asm_inthandler2c:
 		POP		DS
 		POP		ES
 		IRETD
+
+_load_tr:	; void load_tr(int tr)
+		LTR 	[ESP+4]		;load to TR Register
+		RET
+
+_ProcessSwitch:	; void ProcessSwitch(int num)
+		JMP		4*8:0
+		RET
