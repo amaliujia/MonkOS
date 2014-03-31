@@ -6,19 +6,20 @@ extern struct FIFOBuffer fifoBuffer;
 extern struct FIFOBuffer mourseFifoBuffer;
 extern struct TimerCTL timerCTL;
 //struct SHEET *sht_error;
+void task_b_main(struct SHEET *sht);
 void HariMain(void)
 {
 
 	struct BOOTINFO *bootinfo = (struct BOOTINFO *)BOOTINFO_ADDR;
 	char s[40], keyBuf[32], mouBuf[128];
-	char memTest[40];
+	//char memTest[40];
 	char mouses[40];
 	int mx, my;
 	int i = 0;
-	int cursor_location, cursor_color, task_b_esp;
+	int cursor_location, cursor_color;
 	unsigned int totalMemory;
 	struct MemoryManager *memoryManager = (struct memoryManager *)MEMMAN_ADDR;
-	struct FIFOBuffer timerfifo, timerfifo2, timerfifo3;
+	struct FIFOBuffer timerfifo;
 	char timerBuf[8];
 	struct Timer *timer1, *timer2, *timer3;
 	int mouseCheckerStatus;
@@ -26,8 +27,10 @@ void HariMain(void)
 	struct SHTCTL *shtctl;
 	struct SHEET *sht_back, *sht_mouse, *sht_win;
 	unsigned char *buf_back, buf_mouse[256], *buf_win;
-	struct TaskStatusSegment tss_a, tss_b;
-	struct SEGMENT_DESCRIPTOR *gdt = (struct SEGMENT_DESCRIPTOR *)ADR_GDT;
+	struct Process *processa, *processb;
+
+	//struct TaskStatusSegment tss_a, tss_b;
+	//struct SEGMENT_DESCRIPTOR *gdt = (struct SEGMENT_DESCRIPTOR *)ADR_GDT;
 
 	init_MouseChecker(&mouseChecker);
 	init_gdtidt();
@@ -43,7 +46,7 @@ void HariMain(void)
 	io_out8(PIC1_IMR, 0xef);
 
 
-	FIFOBuffer_Init(&timerfifo, 8, timerBuf);
+	FIFOBuffer_Init_Process(&timerfifo, 8, timerBuf, 0);
 	timer1 = Timer_alloc();
 	Timer_init(timer1, &timerfifo, 10);
 	Timer_SetTimer(timer1, 1000);
@@ -100,37 +103,28 @@ void HariMain(void)
 	put_string8(buf_back, bootinfo->scrnx, COL8_FFFFFF, memtest, 0, 44);
 	sheet_refresh(sht_back, 0, 44, 40*16, 60);
 
-	tss_a.ldtr = 0;
-	tss_a.iomap = 0x40000000;
-	tss_b.ldtr = 0;
-	tss_b.iomap = 0x40000000;
-	set_segmdesc(gdt+3, 103, (int)&tss_a, AR_TSS32);
-	set_segmdesc(gdt+4, 103, (int)&tss_b, AR_TSS32);
-	load_tr(3*8);
-	task_b_esp = MemoryManagement_alloc_page(memoryManager, 64 * 1024) + 64 * 1024;
-	tss_b.eip = (int)&task_b_main;
-	tss_b.eflags = 0x00000202; // IF=1
-	tss_b.eax = 0;
-	tss_b.eax = 0;
-	tss_b.ecx = 0;
-	tss_b.edx = 0;
-	tss_b.ebx = 0;
-	tss_b.esp = task_b_esp;
-	tss_b.ebp = 0;
-	tss_b.esi = 0;
-	tss_b.edi = 0;
-	tss_b.es = 1 * 8;
-	tss_b.cs = 2 * 8;
-	tss_b.ss = 1 * 8;
-	tss_b.ds = 1 * 8;
-	tss_b.fs = 1 * 8;
-	tss_b.gs = 1 * 8;
+	Process_init(memoryManager);
+	timerfifo.process = processa;
+	processb = Process_alloc();
+	processb->status.esp = MemoryManagement_alloc_page(memoryManager, 64*1024) + 64*1024-8;
+	processb->status.eip = (int)&task_b_main;
+	processb->status.es = 1 * 8;
+	processb->status.cs = 2 * 8;
+	processb->status.ss = 1 * 8;
+	processb->status.ds = 1 * 8;
+	processb->status.fs = 1 * 8;
+	processb->status.gs = 1 * 8;
+	*((int *)(processb->status.esp + 4)) = (int)sht_back;
+	Process_run(processb);
+
 	for (;;)
 	{
 		io_cli();
 		if (FIFOBuffer_Status(&fifoBuffer) + FIFOBuffer_Status(&mourseFifoBuffer) + FIFOBuffer_Status(&timerfifo) == 0)
 		{
-			io_stihlt();
+			//io_stihlt();
+			Process_sleep(processa);
+			io_sti();
 		}else{
 			if(FIFOBuffer_Status(&fifoBuffer) != 0){
 				i = FIFOBuffer_Get(&fifoBuffer);
@@ -209,7 +203,8 @@ void HariMain(void)
 				}else if(i == 3){
 				put_string8(buf_back, bootinfo->scrnx, COL8_840000, "3Sec", 0, 96);
 				sheet_refresh(sht_back, 0, 96, 56, 112);
-				ProcessSwitch(0, 4*8);
+				//load_tr(4*8);
+				//ProcessSwitch(0, 4*8);
 				}else if(i == 1){
 				put_string8(buf_back, bootinfo->scrnx, COL8_840000, "0.5Sec", 0, 112);
 				sheet_refresh(sht_back, 0, 112, 56, 128);
@@ -220,11 +215,31 @@ void HariMain(void)
 }
 
 
-void task_b_main(void)
+void task_b_main(struct SHEET *sht)
 {
+	struct FIFOBuffer timerfifo;
+	struct Timer *timer;
+	char buf[128];
+	int i;
+	FIFOBuffer_Init_Process(&timerfifo, 128, buf, 0);
+	timer = Timer_alloc();
+	Timer_init(timer, &timerfifo, 1);
+	Timer_SetTimer(timer, 500);
 	//process_show();
 	for (;;) 
 	{ 
-		io_hlt(); 
+		io_cli();
+		if(FIFOBuffer_Status(&timerfifo) != 0)
+		{
+			i = FIFOBuffer_Get(&timerfifo);
+			io_sti();
+			if (i == 1)
+			{
+				//load_tr(3*8);
+				//ProcessSwitch(0, 3*8);
+			}
+		}else{
+			io_stihlt();
+		}
 	}
 }

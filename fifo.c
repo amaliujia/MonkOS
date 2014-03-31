@@ -11,6 +11,18 @@ void FIFOBuffer_Init(struct FIFOBuffer *fifoBuffer, int size, unsigned char *buf
 	fifoBuffer->end = 0;
 	fifoBuffer->flags = 0;
 	fifoBuffer->space = size;
+	fifoBuffer->process = 0;
+}
+
+void FIFOBuffer_Init_Process(struct FIFOBuffer *fifoBuffer, int size, unsigned char *buf, struct Process* process)
+{
+	fifoBuffer->buf = buf;
+	fifoBuffer->size = size;
+	fifoBuffer->start = 0;
+	fifoBuffer->end = 0;
+	fifoBuffer->flags = 0;
+	fifoBuffer->space = size;
+	fifoBuffer->process = process;
 }
 
 int FIFOBuffer_Add(struct FIFOBuffer *fifoBuffer, unsigned char data)
@@ -28,7 +40,13 @@ int FIFOBuffer_Add(struct FIFOBuffer *fifoBuffer, unsigned char data)
 		fifoBuffer->end = 0;
 	}
 	 fifoBuffer->space--;
-
+	 if (fifoBuffer->process != 0)
+	 {
+	 	if (fifoBuffer->process->flags != 2)
+	 	{
+	 		Process_run(fifoBuffer->process);
+	 	}
+	 }
 	return 0;
 }
 
@@ -82,7 +100,6 @@ void KeyboardBuffer_Add(char data, struct KeyboardBuffer akeyboardBuffer)
 		akeyboardBuffer.len++;
 		return;
 	}
-
 }
 
 char KeyboardBuffer_Remove(struct KeyboardBuffer akeyboardBuffer)

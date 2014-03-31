@@ -170,14 +170,30 @@ char KeyboardBuffer_Remove(struct KeyboardBuffer akeyboardBuffer);
 void KeyboardBuffer_Add(char data, struct KeyboardBuffer akeyboardBuffer);
 
 //universal IO buffer
+struct TaskStatusSegment
+{
+	int backlink, esp0, ss0, esp1, ss1, esp2, ss2, cr3;
+	int eip, eflags, eax, ebx, ecx, edx, esp, ebp, esi, edi;
+	int es, cs, ss, ds, fs, gs;
+	int ldtr, iomap; 
+};
+
+struct Process{
+	int segmentNo, flags;
+	struct TaskStatusSegment status;
+};
+
 struct FIFOBuffer
 {
 	unsigned char *buf;
 	int start, end, size, space, flags;
+	struct Process *process;	
 };
 
 // UIOBuffer init func
 void FIFOBuffer_Init(struct FIFOBuffer *fifoBuffer, int size, unsigned char *buf);
+// UIOBuffer init with func
+void FIFOBuffer_Init_Process(struct FIFOBuffer *fifoBuffer, int size, unsigned char *buf, struct Process* process);
 //UIOBuffer add func
 int FIFOBuffer_Add(struct FIFOBuffer *fifoBuffer, unsigned char data);
 //UIOBuffer get func
@@ -306,15 +322,28 @@ int Timer_SetTimer(struct Timer *timer, unsigned int timeout);
 /*
 multi-processes
 */
-struct TaskStatusSegment
-{
-	int backlink, esp0, ss0, esp1, ss1, esp2, ss2, cr3;
-	int eip, eflags, eax, ebx, ecx, edx, esp, ebp, esi, edi;
-	int es, cs, ss, ds, fs, gs;
-	int ldtr, iomap; 
-};
+
 void load_tr(int tr);
 void ProcessSwitch(int eip, int cs);
+
+#define MAX_TASKS	1000
+#define TASK_GDT0	3
+
+
+
+struct ProcessCTL{
+	int online;
+	int runningnow;
+	struct Process *processes[MAX_TASKS];
+	struct Process allProcess[MAX_TASKS];
+};
+
+struct Process *Process_init(struct MemoryManager *memoryManager);
+struct Process *Process_alloc();
+void Process_run(struct Process *process);
+void Process_switch(void);
+void Process_sleep(struct Process* process);
+
 /*
 Debug func
 */
@@ -323,5 +352,3 @@ void process_show_buddy();
 void FIFOBuffer_show(struct FIFOBuffer *fifoBuffer);
 void process_show_string(struct SHEET *sheet, char *string);
 
-
-void task_b_main(void);

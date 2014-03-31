@@ -5,7 +5,7 @@
 
 struct TimerCTL timerCTL;
 extern struct SHEET *sht_back;
-
+extern struct Timer *process_timer;
 void init_pit(void)
 {
 	io_out8(PIT_CTRL, 0x34);
@@ -44,23 +44,14 @@ void Timer_free(struct Timer *timer)
 
 int Timer_init(struct Timer *timer, struct FIFOBuffer *fifo, unsigned char data)
 {
-//	int OSError = OS_OK;
-//	if(timer->flag != 0){
 		timer->fifo = fifo;
 		timer->data = data;
-//		goto done;
-//	}
-//	OSError = OS_TIMER_ALLOC_FAIL;
-//done:
 	return 0;
 }
 
 int Timer_SetTimer(struct Timer *timer, unsigned int timeout)
 {
-//	int OSError = OS_OK;
-	int i, j, flags;
-//	if (timer->flag == TIMER_ALLOC)
-//	{
+		int i, j, flags;
 		timer->timeout = timeout + timerCTL.count;
 		timer->flag = TIMER_RUNNING;
 		flags = io_load_eflags();
@@ -82,20 +73,14 @@ int Timer_SetTimer(struct Timer *timer, unsigned int timeout)
 		timerCTL.timersInActive[i] = timer;
 		timerCTL.next = timerCTL.timersInActive[0]->timeout;
 		io_store_eflags(flags);
-		// if (timerCTL.next > timer->timeout)
-		// {
-		// 	timerCTL.next = timer->timeout;
-		// }
-//		goto done;
-//	}
-//	OSError = OS_TIMER_ALLOC_FAIL;
-//done:
 	return 0;
 }
 
 void inthandler20(int *esp)
 {
 	int i, j;
+	//struct Timer *timer;
+	char ts = 0;
 	io_out8(PIC0_OCW2, 0x60); //receive IRQ-00
 	timerCTL.count++;
 	if (timerCTL.next > timerCTL.count)
@@ -116,6 +101,14 @@ void inthandler20(int *esp)
 	}
 
 	timerCTL.active -= i;
+	for(j = 0; j < i ;j++)
+	{
+		if (timerCTL.timersInActive[i] == process_timer)
+		{
+			ts = 1;
+			break;
+		}
+	}
 
 	for(j = 0; j < timerCTL.active; j++)
 	{
@@ -128,34 +121,10 @@ void inthandler20(int *esp)
 	}else{
 		timerCTL.next = 0xffffffff;
 	}
-	// for(i = 0; i < MAX_TIMER; i++)
-	// {
-	// 	if (timerCTL.timers[i].flag == TIMER_RUNNING)
-	// 	{
-	// 		if (timerCTL.timers[i].timeout <= timerCTL.count)
-	// 		{
-	// 			timerCTL.timers[i].flag = TIMER_ALLOC;
-	// 			FIFOBuffer_Add(timerCTL.timers[i].fifo, timerCTL.timers[i].data);
-	// 		}else{
-	// 			if(timerCTL.next > timerCTL.timers[i].timeout)
-	// 				timerCTL.next = timerCTL.timers[i].timeout;
-	// 		}
-	// 	}
-	// }
-	//process_show();
+	if(ts !=0){
+		Process_switch();
+	}
+
 done:
 	return;
 }
-
-//old version of settimer func, not be used anymore
-// void settimer(unsigned int timeout, struct FIFOBuffer *fifo, unsigned char data)
-// {
-// 	int eflags;
-// 	eflags = io_load_eflags();
-// 	io_cli();
-// 	timerCTL.timeout = timeout;
-// 	timerCTL.fifo = fifo;
-// 	timerCTL.data = data;
-// 	io_store_eflags(eflags);
-// 	return;
-// }
