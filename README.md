@@ -18,7 +18,7 @@ set pallet
 
 support ascii
 
-wirte interrupt handlers
+write interrupt handlers
 
 deal with keyboard input
 
@@ -31,6 +31,8 @@ multi-windows and layer hierarchy
 multi-timer
 
 timer controller
+
+process management
 
 Copyright
 =======
