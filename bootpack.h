@@ -2,12 +2,12 @@
 
 /*
 	Error definition
-*/
+ */
 #define OS_OK 						0;
 #define OS_TIMER_ALLOC_FAIL			1;
 
 
-//fundamental functions 
+//fundamental functions
 void io_hlt(void);
 void write_mem8(int addr, int data);
 void io_cli(void);
@@ -24,21 +24,21 @@ void io_store_eflags(int eflags);
 
 //Boot info
 static char chartable[0x54] = {
-		0,   0,   '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '^', 0,   0,
-		'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '@', '[', 0,   0,   'A', 'S',
-		'D', 'F', 'G', 'H', 'J', 'K', 'L', ';', ':', 0,   0,   ']', 'Z', 'X', 'C', 'V',
-		'B', 'N', 'M', ',', '.', '/', 0,   '*', 0,   ' ', 0,   0,   0,   0,   0,   0,
-		0,   0,   0,   0,   0,   0,   0,   '7', '8', '9', '-', '4', '5', '6', '+', '1',
-		'2', '3', '0', '.'
+    0,   0,   '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '^', 0,   0,
+    'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '@', '[', 0,   0,   'A', 'S',
+    'D', 'F', 'G', 'H', 'J', 'K', 'L', ';', ':', 0,   0,   ']', 'Z', 'X', 'C', 'V',
+    'B', 'N', 'M', ',', '.', '/', 0,   '*', 0,   ' ', 0,   0,   0,   0,   0,   0,
+    0,   0,   0,   0,   0,   0,   0,   '7', '8', '9', '-', '4', '5', '6', '+', '1',
+    '2', '3', '0', '.'
 };
 
 #define BOOTINFO_ADDR 0x0ff0
 
 struct BOOTINFO
 {
-	char cyls, leds, vmode, reserve;
-	short scrnx, scrny;
-	char *vram;
+    char cyls, leds, vmode, reserve;
+    short scrnx, scrny;
+    char *vram;
 };
 
 
@@ -85,9 +85,9 @@ void draw_cursor(char *vram, int xsize, int cursorXSize, int cursorYSize, int st
 //GDT descriptor structure
 struct SEGMENT_DESCRIPTOR
 {
-	short limit_low, base_low;
-	char base_mid, access_right;
-	char limit_high, base_high;
+    short limit_low, base_low;
+    char base_mid, access_right;
+    char limit_high, base_high;
 };
 
 void init_gdtidt();
@@ -109,9 +109,9 @@ void set_segmdesc(struct SEGMENT_DESCRIPTOR *sd, unsigned int limit, int base, i
 //IDT descriptor structure
 struct GATE_DESCRIPTOR
 {
-	short offset_low, selector;
-	char dw_count, access_right;
-	short offset_high;
+    short offset_low, selector;
+    char dw_count, access_right;
+    short offset_high;
 };
 void load_idtr(int limit, int addr);
 void set_gatedesc(struct GATE_DESCRIPTOR *gd, int offset, int selector, int ar);
@@ -119,7 +119,7 @@ void set_gatedesc(struct GATE_DESCRIPTOR *gd, int offset, int selector, int ar);
 
 //PIC
 
-//define some constants 
+//define some constants
 #define PIC0_ICW1		0x0020
 #define PIC0_OCW2		0x0020
 #define PIC0_IMR		0x0021
@@ -145,18 +145,18 @@ void asm_inthandler2c(void);
 //Keyboard and mouse
 struct KeyboardBuffer
 {
-	unsigned char data[32];
-	int start,end,len; 
-
+    unsigned char data[32];
+    int start,end,len;
+    
 };
 void wait_KBC_sendready(void);
 void init_keyboard(void);
 void enable_mouse(void);
 
 struct MouseChecker{
-	char mouseCheckBuffer[3];
-	int phase;
-	int x, y, btn;
+    char mouseCheckBuffer[3];
+    int phase;
+    int x, y, btn;
 };
 
 // mouse buffer methods
@@ -172,22 +172,22 @@ void KeyboardBuffer_Add(char data, struct KeyboardBuffer akeyboardBuffer);
 //universal IO buffer
 struct TaskStatusSegment
 {
-	int backlink, esp0, ss0, esp1, ss1, esp2, ss2, cr3;
-	int eip, eflags, eax, ebx, ecx, edx, esp, ebp, esi, edi;
-	int es, cs, ss, ds, fs, gs;
-	int ldtr, iomap; 
+    int backlink, esp0, ss0, esp1, ss1, esp2, ss2, cr3;
+    int eip, eflags, eax, ebx, ecx, edx, esp, ebp, esi, edi;
+    int es, cs, ss, ds, fs, gs;
+    int ldtr, iomap;
 };
 
 struct Process{
-	int segmentNo, flags;
-	struct TaskStatusSegment status;
+    int segmentNo, flags;
+    struct TaskStatusSegment status;
 };
 
 struct FIFOBuffer
 {
-	unsigned char *buf;
-	int start, end, size, space, flags;
-	struct Process *process;	
+    unsigned char *buf;
+    int start, end, size, space, flags;
+    struct Process *process;
 };
 
 // UIOBuffer init func
@@ -202,8 +202,8 @@ int FIFOBuffer_Get(struct FIFOBuffer *fifoBuffer);
 int FIFOBuffer_Status(struct FIFOBuffer *fifoBuffer);
 
 /*
-Memory Management
-*/
+ Memory Management
+ */
 #define EFLAGS_AC_BIT	0x00040000
 #define CR0_CACHE_DISABLE	0x60000000
 
@@ -219,17 +219,17 @@ unsigned int memtest_sub(unsigned int start, unsigned int end);
 
 struct SegmentInfo
 {
-	unsigned int address, size;
+    unsigned int address, size;
 };
 
-struct MemoryManager	
+struct MemoryManager
 {
-	// free: segments available
-	// maxFree: frees' historical maximum number
-	// lostSize:total size of memory released wrongly
-	// losts: failed times
-	struct SegmentInfo segmentInfo[1000];
-	int free, maxFree, lostSize, losts;
+    // free: segments available
+    // maxFree: frees' historical maximum number
+    // lostSize:total size of memory released wrongly
+    // losts: failed times
+    struct SegmentInfo segmentInfo[1000];
+    int free, maxFree, lostSize, losts;
 };
 void MemoryManagement_init(struct MemoryManager *memManager);
 //void MemoryManagement_setFree(struct MemoryManager *memManager, unsigned int address, unsigned int size);
@@ -243,15 +243,15 @@ int MemoryManagement_free_page(struct MemoryManager *memManager, unsigned int ad
 // screen layers
 #define MAX_SHEETS		256
 struct SHEET {
-	unsigned char *buf;
-	int bxsize, bysize, vx0, vy0, col_inv, height, flags;
-	struct SHTCTL *ctl;
+    unsigned char *buf;
+    int bxsize, bysize, vx0, vy0, col_inv, height, flags;
+    struct SHTCTL *ctl;
 };
 struct SHTCTL {
-	unsigned char *vram, *map;
-	int xsize, ysize, top;
-	struct SHEET *sheets[MAX_SHEETS];
-	struct SHEET sheets0[MAX_SHEETS];
+    unsigned char *vram, *map;
+    int xsize, ysize, top;
+    struct SHEET *sheets[MAX_SHEETS];
+    struct SHEET sheets0[MAX_SHEETS];
 };
 struct SHTCTL *shtctl_init(struct MemoryManager *memManager, unsigned char *vram, int xsize, int ysize);
 struct SHEET *sheet_alloc(struct SHTCTL *ctl);
@@ -269,33 +269,33 @@ void put_string_package(struct SHEET *sheet, int x, int y, int wordColor, int ba
 
 /*
 	timer
-*/
+ */
 #define PIT_CTRL	0x0043
 #define PIT_CNT0	0x0040
 #define MAX_TIMER 500
 
 struct Timer
 {
-	unsigned int timeout;
-	//record state of this timer
-	unsigned int flag;
-	//记录离超时还有多少时间
-	struct FIFOBuffer *fifo;
-	int data;
+    unsigned int timeout;
+    //record state of this timer
+    unsigned int flag;
+    //记录离超时还有多少时间
+    struct FIFOBuffer *fifo;
+    int data;
 };
 
 struct TimerCTL
 {
-	//开机计时
-	unsigned int count;
-	//next possible time out timer
-	unsigned int next;
-	//how many timers are active
-	unsigned int active;
-	//timers
-	struct Timer timers[MAX_TIMER];
-	//active timers
-	struct Timer *timersInActive[MAX_TIMER];
+    //开机计时
+    unsigned int count;
+    //next possible time out timer
+    unsigned int next;
+    //how many timers are active
+    unsigned int active;
+    //timers
+    struct Timer timers[MAX_TIMER];
+    //active timers
+    struct Timer *timersInActive[MAX_TIMER];
 };
 
 // struct FIFOBufferInteger
@@ -320,8 +320,8 @@ int Timer_SetTimer(struct Timer *timer, unsigned int timeout);
 //void settimer(unsigned int timeout, struct FIFOBuffer *fifo, unsigned char data);
 
 /*
-multi-processes
-*/
+ multi-processes
+ */
 
 void load_tr(int tr);
 void ProcessSwitch(int eip, int cs);
@@ -332,10 +332,10 @@ void ProcessSwitch(int eip, int cs);
 
 
 struct ProcessCTL{
-	int online;
-	int runningnow;
-	struct Process *processes[MAX_TASKS];
-	struct Process allProcess[MAX_TASKS];
+    int online;
+    int runningnow;
+    struct Process *processes[MAX_TASKS];
+    struct Process allProcess[MAX_TASKS];
 };
 
 struct Process *Process_init(struct MemoryManager *memoryManager);
@@ -345,8 +345,8 @@ void Process_switch(void);
 void Process_sleep(struct Process* process);
 
 /*
-Debug func
-*/
+ Debug func
+ */
 void process_show();
 void process_show_buddy();
 void FIFOBuffer_show(struct FIFOBuffer *fifoBuffer);
